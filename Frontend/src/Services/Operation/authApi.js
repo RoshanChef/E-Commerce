@@ -1,0 +1,158 @@
+import fetchData from "../../hooks/fetchData";
+import { toast } from "sonner";
+import { setLoading, setSignupData, setToken } from "../../Redux/slices/authSlice";
+import { auth } from '../api';
+const { LOGIN_API, VERIFY_API, SENDOTP_API, SIGNUP_API, CHANGE_PASSWORD_API } = auth;
+
+export function login(email, password, navigate) {
+    return async function (dispatch) {
+        dispatch(setLoading(true));
+        try {
+            const response = await fetchData(LOGIN_API, "POST", { email, password });
+
+            if (response.email == email) {
+                navigate('/verify-otp', {
+                    state: { email }
+                });
+            }
+            else {
+                console.log("Login failed:", response?.mes);
+            }
+        } catch (error) {
+            console.log("error while login", error.message);
+            toast.error(error?.response.data.mes);
+        } finally {
+            dispatch(setLoading(false));
+        }
+    }
+}
+
+export function verify_otp(email, otp, navigate) {
+    return async function (dispatch) {
+        try {
+            const response = await fetchData(VERIFY_API, "POST", { email, otp });
+            if (response) {
+                localStorage.setItem('token', response.token);
+                dispatch(setToken(response.token));
+
+                console.log(response.user);
+                if (response.user.accountType == 'customer') {
+                    dispatch(setSignupData(response.user));
+                    localStorage.setItem('user', JSON.stringify(response.user));
+                    navigate('/');
+                }
+                else if (response.user.accountType == 'admin')
+                    navigate('/admin');
+                else {
+                    localStorage.setItem('seller-user', JSON.stringify(response.user));
+                    navigate('/seller');
+                }
+            }
+
+        } catch (error) {
+            console.log("error while otp verification", error.message);
+        }
+    }
+}
+
+export function sendOtp(email) {
+    return async function () {
+        try {
+            const response = await fetchData(SENDOTP_API, "POST", { email });
+
+            console.log(response);
+        } catch (error) {
+            console.log(error.message);
+        }
+    }
+}
+
+export function sendOtp_forget(email, navigate) {
+    return async function () {
+        setLoading(true);
+        try {
+            const response = await fetchData(SENDOTP_API, "POST", { email });
+            if (response) {
+                navigate('/forgot-password/otp', { state: { email } });
+            }
+
+        } catch (error) {
+            console.log(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+}
+
+export function verify_forgetOtp(email, otp, navigate) {
+    return async function () {
+        setLoading(true);
+        try {
+            const response = await fetchData(VERIFY_API, "POST", { email, otp });
+            if (response) {
+                navigate('/forgot-password/reset', { state: { email } });
+            }
+        } catch (error) {
+            console.log(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+}
+
+export function changePassword(email, password, navigate) {
+    return async function () {
+        setLoading(true);
+        try {
+
+            const response = await fetchData(CHANGE_PASSWORD_API, 'POST', { email, password });
+            if (response) {
+                navigate('/login');
+            }
+        } catch (error) {
+            console.log(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+}
+
+export function logout(navigate) {
+    return function (dispatch) {
+        dispatch(setToken(null));
+        dispatch(setSignupData(null));
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        toast.success('logout comming soon');
+        navigate('/');
+    }
+}
+
+
+export function signUp(navigate, email, password, firstName, lastName, accountType = undefined) {
+    return async function (dispatch) {
+        dispatch(setLoading(true));
+        try {
+            let obj = { email, password, firstName, lastName, accountType };
+            const response = await fetchData(SIGNUP_API, 'POST', obj);
+
+
+            console.log(response);
+            if (response) {
+                await dispatch(setSignupData(response.user));
+                localStorage.setItem('user', JSON.stringify(response.user))
+                navigate('/');
+            }
+
+        } catch (error) {
+
+            if (error.response?.status == 409)
+                toast.error(`${(error.response?.data?.mes)}`);
+            else
+                console.log(error.message);
+        } finally {
+            dispatch(setLoading(false));
+        }
+    }
+}
+
