@@ -22,6 +22,8 @@ import Seller from './pages/Seller.';
 import SuccessStories from './components/core/Seller/SuccessStories';
 import AddProduct from './components/core/Seller/AddProduct';
 import AddToCart from './components/feature/AddToCart';
+import Checkout from './components/feature/Checkout';
+import Orders from './components/core/User/Orders';
 
 
 function App() {
@@ -52,7 +54,9 @@ function App() {
           {/* Feature Routes */}
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
           <Route path="/addToCart" element={<AddToCart />} />
+          <Route path="/checkout" element={<Checkout />} />
 
 
           {/* Seller Routes */}

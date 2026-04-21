@@ -7,6 +7,9 @@ import {
 
 import Dashboard from "./Dashboard";
 import AddProduct from "./AddProduct";
+import { useSelector } from "react-redux";
+import SellerProducts from "./SellerProducts";
+import SellerOrders from "./SellerOrders";
 
 function SellerHome() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -17,9 +20,13 @@ function SellerHome() {
     switch (activeTab) {
       case "Dashboard": return <Dashboard setActiveTab={setActiveTab} />;
       case "Add Product": return <AddProduct />;
+      case 'Products': return <SellerProducts />;
+      case 'Orders': return <SellerOrders />;
       default: return <Dashboard setActiveTab={setActiveTab} />;
     }
   };
+
+  const { signupData: user } = useSelector(state => state.auth);
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-slate-900 font-sans">
@@ -135,10 +142,11 @@ function SellerHome() {
 
             <button className="flex items-center gap-3 p-1.5 hover:bg-slate-100 rounded-2xl transition-all">
               <div className="h-9 w-9 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden">
-                <img src="https://ui-avatars.com/api/?name=Alex+Seller&background=6366f1&color=fff" alt="Avatar" />
+                <img src={user.image} alt="Avatar" />
               </div>
+
               <div className="hidden lg:block text-left">
-                <p className="text-xs font-bold text-slate-800">Alex Rivera</p>
+                <p className="text-xs font-bold text-slate-800">{user.firstName} {user.lastName}</p>
                 <p className="text-[10px] text-slate-500 font-medium">Pro Seller</p>
               </div>
               <ChevronDown size={16} className="text-slate-400" />

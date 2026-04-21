@@ -1,0 +1,21 @@
+/* styles.css */
+.vertical-pagination .swiper-pagination-bullet {
+  width: 2px;
+  height: 40px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 0;
+  margin: 0 !important;
+  opacity: 1;
+  transition: all 0.5s;
+}
+
+@media (max-width: 1024px) {
+  .vertical-pagination .swiper-pagination-bullet {
+    background: rgba(255,255,255,0.3);
+  }
+}
+
+.vertical-pagination .swiper-pagination-bullet-active {
+  background: #3b82f6 !important;
+  height: 60px;
+}

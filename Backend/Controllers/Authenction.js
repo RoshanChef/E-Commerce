@@ -31,7 +31,7 @@ async function verify_otp(req, res) {
     if (otp_verify?.otp != otp) {
         return res.status(404).send({ mes: 'Invalid Otp entered' });
     }
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email }).populate("cart.product"); 
 
     // Generate JWT token
     const token = jwt.sign({ id: user._id },
@@ -47,7 +47,7 @@ async function verify_otp(req, res) {
 
     return res.status(200).json({
         mes: "User logged in successfully",
-        user
+        user,token
     });
 
 }

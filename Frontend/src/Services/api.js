@@ -12,7 +12,13 @@ export const auth = {
     COUPON_API: BASE_URL + '/auth/coupon',
     CHANGE_PASSWORD_API: BASE_URL + '/auth/changePassword',
     ADD_API: BASE_URL + "/auth/add",
-    VIEW_API: BASE_URL + "/auth/get"
+    VIEW_API: BASE_URL + "/auth/get",
+    DESCREASE_API: BASE_URL + '/auth/decrease',
+    REMOVE_API: BASE_URL + '/auth/remove',
+    CREATE_ORDER_API: BASE_URL + '/auth/create-order',
+    VERIFY_PAYMENT: BASE_URL + '/auth/verify-payment',
+    PLACE_ORDER: BASE_URL + '/auth/place-order',
+    VIEW_ORDER: BASE_URL + '/auth/view-order'
 }
 
 export const product = {
@@ -20,6 +26,8 @@ export const product = {
     UPDATE_API: BASE_URL + '/product/update/:productId',
     DELETE_API: BASE_URL + '/product/delete/:productId',
     GET_ALLPRODUCT_API: BASE_URL + '/product/getAllProducts',
+    GET_ALL_SELLER_PRODUCT_API: BASE_URL + '/product/getAllSellerProducts',
+    GET_ALLORDERS: BASE_URL + '/product/getAllOrders',
     GET_PRODUCT_API: BASE_URL + '/product/getCategory/:catId'
 }
 

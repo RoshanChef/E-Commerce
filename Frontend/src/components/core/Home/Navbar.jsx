@@ -21,6 +21,7 @@ function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+
     return (
         <nav className={`fixed top-0 left-0 w-full z-50 px-6 py-3 flex items-center justify-between transition-all duration-300
         ${isScrolled ? "bg-white/80 shadow-md backdrop-blur-lg" : "bg-white/40 backdrop-blur-sm"}`}>
@@ -64,9 +65,9 @@ function Navbar() {
                 {/* Cart Icon with Badge */}
                 <Link to={'addToCart'} className="relative p-2.5 rounded-full hover:bg-slate-100 cursor-pointer transition-colors group">
                     <BaggageClaim size={22} className="text-slate-600 group-hover:text-indigo-600" />
-                    <span className="absolute top-1 right-1 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
-                        0
-                    </span>
+                    {signupData?.cart?.length > 0 && <span className="absolute top-1 right-1 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
+                        {signupData?.cart?.length}
+                    </span>}
                 </Link>
 
                 {signupData ? (
@@ -108,7 +109,7 @@ function Navbar() {
                                                     break;
 
                                                 case "Orders":
-
+                                                    navigate('/orders')
                                                     break;
 
                                                 default:

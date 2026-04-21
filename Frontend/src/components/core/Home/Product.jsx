@@ -1,28 +1,23 @@
 import { ChevronsRight } from "lucide-react";
-import fetchData from "../../../hooks/fetchData";
 import { useEffect, useState } from "react";
-import { product } from "../../../Services/api";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setProduct } from '../../../Redux/slices/productSlice';
-const { GET_ALLPRODUCT_API } = product;
+import { getAllProducts } from "../../../Services/Operation/productApi";
 
 function Product() {
     let [data, setData] = useState([]);
     // const { products, setProduct } = useSelector(state => state.product);
     const dispatch = useDispatch();
-    // console.log(products);
-
 
     useEffect(() => {
         async function main() {
-            let url = GET_ALLPRODUCT_API;
-            const val = await fetchData(url, 'GET');
-            setData(val.products);
-            await dispatch(setProduct(val.products));
+            const val = await dispatch(getAllProducts());
+            setData(val);
+            await dispatch(setProduct(val));
         }
         main();
-    }, []);
+    }, [dispatch]);
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] pt-24 px-6 md:px-12">
@@ -37,13 +32,13 @@ function Product() {
 
             {/* Product Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-                {data.map((ele) => (
+                {data?.map((ele) => (
                     <Link
                         to={'/product/ele.description'}
                         key={ele._id}
                         state={{ ele }}
                         className="group bg-white rounded-2xl p-3 border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col"
-                    >
+                    > 
                         {/* Image Container */}
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-[#F3F4F6]">
                             <img

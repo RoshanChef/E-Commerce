@@ -28,13 +28,14 @@ const userSchema = new mongoose.Schema({
             city: String,
             state: String,
             pincode: String,
-            country: String
+            country: { type: String, default: 'India' }
         }
     ],
     cart: [
         {
             product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-            quantity: { type: Number, default: 1 }
+            quantity: { type: Number, default: 1 },
+            size: { type: String }
         }
     ],
     accountType: {

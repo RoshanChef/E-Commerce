@@ -1,3 +1,4 @@
+const orderModel = require("../Models/Order");
 const productModel = require("../Models/Product");
 const { uploadToCloudinary } = require("../Services/uploadToCloudinary");
 
@@ -144,7 +145,7 @@ async function updateProduct(req, res) {
 
 async function deleteProduct(req, res) {
     try {
-        const { productId } = req.params;
+        const { productId } = req.body;
 
         // validation (only check required fields if needed)
         if (!productId) {
@@ -162,6 +163,7 @@ async function deleteProduct(req, res) {
             })
         }
         res.status(200).send({
+            success : true,
             message: "Product deleted successfully",
             product
         })
@@ -173,16 +175,13 @@ async function deleteProduct(req, res) {
     }
 }
 
-// for the user 
-
-async function getAllProducts(req, res) {
+async function getAllSellerProducts(req, res) {
     try {
-
-        const products = await productModel.find().populate('category');
+        const products = await productModel.find({ createdBy: req.userId }).populate('category');
 
         if (!products)
             return res.status(404).send({ mes: "There is no Product for sell" });
-        return res.status(200).send({ products });
+        return res.status(200).send({ success: true, products });
 
     } catch (error) {
         console.log(error);
@@ -190,13 +189,29 @@ async function getAllProducts(req, res) {
             message: error.message || "Internal Server Error"
         })
     }
-
 }
 
 
+// for the user 
+async function getAllProducts(req, res) {
+    try {
+        const products = await productModel.find().populate('category');
+
+        if (!products)
+            return res.status(404).send({ mes: "There is no Product for sell" });
+        return res.status(200).send({ success: true, products });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: error.message || "Internal Server Error"
+        })
+    }
+}
+
 async function getProductByCat(req, res) {
     try {
-        const { catId } = req.params;
+        const { catId } = req.body;
 
         const products = await productModel.find({ category: catId }).populate('category');
 
@@ -218,7 +233,26 @@ async function getProductByCat(req, res) {
         })
     }
 }
+
+async function getAllOrders(req, res) {
+    try {
+        const orders = await orderModel.find().populate('products.product').populate('user');
+
+        let data = orders.filter(item => item.products.filter(ele => ele.createdBy == req.userId));
+
+        res.status(200).send({
+            success: true,
+            orders: orders
+        })
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal Server Error"
+        })
+    }
+}
 module.exports = {
     createProduct, updateProduct, deleteProduct,
-    getProductByCat, getAllProducts
+    getProductByCat, getAllProducts, getAllOrders, getAllSellerProducts
 }

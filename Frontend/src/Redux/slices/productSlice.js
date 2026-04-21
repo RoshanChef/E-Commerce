@@ -5,7 +5,11 @@ const productSlice = createSlice({
     initialState: { products: [] },
     reducers: {
         setProduct: (state, action) => {
-            state.products = [...state.products, ...action.payload]
+            const payload = Array.isArray(action.payload)
+                ? action.payload
+                : [action.payload];
+
+            state.products.push(...payload);
         }
     }
 });

@@ -1,4 +1,18 @@
 @import "tailwindcss";
-:root {}
 
+@media print {
+    body {
+        background: white;
+    }
 
+    .print\:hidden {
+        display: none !important;
+    }
+
+    .invoice-root {
+        width: 100%;
+        max-width: 100%;
+        box-shadow: none !important;
+        border: none !important;
+    }
+}

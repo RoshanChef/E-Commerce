@@ -4,10 +4,9 @@ require('dotenv').config();
 
 
 function Auth(req, res, next) {
-    const token = req.cookies.token || req.body.token
+    const token = req.cookies?.token || req.body?.token
         || req.header("Authorization")?.replace("Bearer ", "");
     if (!token) { return res.status(401).json({ message: "Unauthorized pass the token" }); }
-
     try {
         const { id } = jwt.verify(token, process.env.JWT_SECRET);
         req.userId = id;

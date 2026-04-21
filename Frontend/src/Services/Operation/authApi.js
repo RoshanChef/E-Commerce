@@ -128,7 +128,6 @@ export function logout(navigate) {
     }
 }
 
-
 export function signUp(navigate, email, password, firstName, lastName, accountType = undefined) {
     return async function (dispatch) {
         dispatch(setLoading(true));
@@ -155,4 +154,3 @@ export function signUp(navigate, email, password, firstName, lastName, accountTy
         }
     }
 }
-

@@ -1,9 +1,20 @@
 const couponModel = require("../Models/Coupon");
+const productModel = require("../Models/Product");
 const userModel = require("../Models/User");
+const Razorpay = require('razorpay');
+const dotenv = require('dotenv');
+const crypto = require("crypto");
+const orderModel = require("../Models/Order");
+dotenv.config();
+
+var razorpay = new Razorpay({
+    key_id: process.env.RAZOR_KEY,
+    key_secret: process.env.RAZOR_SECRET,
+});
 
 async function addToCart(req, res) {
     try {
-        const { id: productId } = req.body;
+        const { size, id: productId } = req.body;
         const userId = req.userId;
 
         // validate productId
@@ -11,32 +22,119 @@ async function addToCart(req, res) {
             return res.status(400).json({ mes: "Product ID is required" });
         }
 
+        if (!size) {
+            return res.status(400).json({ mes: "Size is required" });
+        }
+
         const user = await userModel.findById(userId);
+        const product = await productModel.findById(productId);
 
         if (!user) {
             return res.status(404).json({ mes: "User not found" });
         }
 
-        // find product in cart (correct ObjectId compare)
-        const index = user.cart.findIndex(
-            (item) => item.product.toString() === productId
+        if (!product) {
+            return res.status(404).json({ mes: "Product not found" });
+        }
+
+        // find size index
+        const sizeIndex = product.sizes.findIndex((item) => item.size === size);
+
+        if (sizeIndex === -1) {
+            return res.status(404).json({ mes: "Size not available" });
+        }
+
+        // check stock
+        if (product.sizes[sizeIndex].quantity <= 0) {
+            return res.status(200).json({ mes: "Out of stock" });
+        }
+
+        // reduce stock
+        product.sizes[sizeIndex].stock -= 1;
+
+        // find product in cart
+        const cartIndex = user.cart.findIndex(
+            (item) => {
+                return item.product.toString() == productId.toString()
+            }
         );
 
-        if (index !== -1) {
-            user.cart[index].quantity += 1;
+        if (cartIndex !== -1 && user.cart[cartIndex].size == size) {
+            user.cart[cartIndex].quantity += 1;
         } else {
             user.cart.push({
                 product: productId,
                 quantity: 1,
+                size: size,
             });
         }
 
+        await product.save();
+        await user.save();
+
+        return res.status(200).json({
+            mes: "Product added to cart",
+            cart: user.cart, user: user.populate('cart.product')
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            mes: "Internal Server error",
+        });
+    }
+}
+
+async function decreaseCartQuantity(req, res) {
+    try {
+        const { size, productId } = req.body;
+        const userId = req.userId;
+
+        // validate productId
+        if (!productId) {
+            return res.status(400).json({ mes: "Product ID is required" });
+        }
+
+        if (!size) {
+            return res.status(400).json({ mes: "Size is required" });
+        }
+
+        const user = await userModel.findById(userId);
+        const product = await productModel.findById(productId);
+
+        if (!user) {
+            return res.status(404).json({ mes: "User not found" });
+        }
+        // find size index
+        const sizeIndex = product.sizes.findIndex((item) => item.size === size);
+
+        if (sizeIndex === -1) {
+            return res.status(404).json({ mes: "Size not available" });
+        }
+
+        // increase stock
+        product.sizes[sizeIndex].stock += 1;
+
+        // find product in cart
+        const cartIndex = user.cart.findIndex(
+            (item) => item.product.toString() === productId.toString()
+        );
+
+        if (cartIndex !== -1 && user.cart[cartIndex].size == size) {
+            user.cart[cartIndex].quantity -= 1;
+            if (user.cart[cartIndex].quantity <= 0) {
+                user.cart = user.cart.filter((_, inx) => inx != cartIndex);
+            }
+        }
+
+        await product.save();
         await user.save();
 
         return res.status(200).json({
             mes: "Product added to cart",
             cart: user.cart,
+            user: user.populate('cart.product')
         });
+
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -47,34 +145,48 @@ async function addToCart(req, res) {
 
 async function removeFromCart(req, res) {
     try {
-        const { id: productId } = req.params;
+        const { productId, stock, size } = req.body;
         const userId = req.userId;
-        let user = await userModel.findByIdAndUpdate(userId, {
-            $pull: { cart: { product: productId } }
-        },
-            { new: true }
-        );
 
-        res.status(200).json({ user })
+        if (!productId) {
+            return res.status(400).json({ mes: "Product ID is required" });
+        }
+
+        const user = await userModel.findByIdAndUpdate(userId, {
+            $pull: { cart: { product: productId } }
+        }, { new: true }).populate("cart.product");
+
+        if (!user) {
+            return res.status(404).json({ mes: "User not found" });
+        }
+
+        const product = await productModel.findById(productId);
+        const index = product.sizes.findIndex(item => item.size == size);
+        product.sizes[index].stock += Number(stock);
+
+        await product.save();
+
+        res.send({ mes: 'remove item from cart', user });
+
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({
-            mes: "Internal Server error"
+            mes: "Internal Server error",
         });
     }
 }
+
 
 async function viewCart(req, res) {
     try {
         const userId = req.userId;
         const user = await userModel.findById(userId)
-            .populate({
-                path: "cart.product"
-            });
+            .populate('cart.product');
 
         if (!user) return res.status(404).json({ mes: "User not found" });
         res.status(200).json({
-            data: user.cart
+            data: user.cart,
+            user
         })
 
     } catch (error) {
@@ -130,9 +242,90 @@ async function viewCoupon(req, res) {
     }
 }
 
+async function createOrder(req, res) {
+    try {
+        const { total } = req.body;
+
+        const options = {
+            amount: total * 100, // amount in paise (₹ total * 100)
+            currency: "INR",
+            receipt: "receipt_order_1"
+        };
+
+        const order = await razorpay.orders.create(options);
+        res.status(200).send({ order });
+    } catch (err) {
+        res.status(500).send(err);
+    }
+}
+
+async function verify_payment(req, res) {
+    const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+    } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZOR_SECRET)
+        .update(body)
+        .digest("hex");
+
+    if (expectedSignature === razorpay_signature) {
+        res.json({ success: true });
+    } else {
+        res.status(400).json({ success: false });
+    }
+}
+
+async function placeOrder(req, res) {
+    try {
+        const user = req.userId;
+        const orderData = req.body;
+
+        let products = orderData.items.map((item) => {
+            return {
+                product: item.product._id,
+                quantity: item.quantity
+            }
+        })
+        let totalAmount = Number(orderData.totalAmount);
+
+        let paymentMethod = orderData.paymentMethod;
+        let transactionId = null;
+        let paymentStatus = "pending";
+
+        if (paymentMethod == "online") {
+            transactionId = req.body.paymentId;
+            paymentStatus = "completed"
+        }
+
+
+        const order = await orderModel.create({
+            user,
+            products,
+            totalAmount,
+            paymentStatus,
+            paymentMethod,
+            transactionId
+        })
+
+        const userData = await userModel.findByIdAndUpdate(user, { $set: { cart: [] } });
+
+        return res.status(200).send({
+            mes: 'order send successfully',
+            order, user: userData
+        })
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 
 module.exports = {
     addToCart, removeFromCart,
-    viewCart, updateCart,
-    viewCoupon
+    viewCart, updateCart, verify_payment, placeOrder, viewCoupon,
+    decreaseCartQuantity, createOrder
 };
