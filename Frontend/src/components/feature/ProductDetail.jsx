@@ -1,9 +1,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RefreshCw, ShieldCheck, Star, Heart, Truck, CheckCircle2 } from "lucide-react";
-import { useState, useMemo, useCallback, lazy, Suspense } from "react";
+import { useState, useMemo, useCallback, lazy, Suspense, useEffect } from "react";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { add_To_Cart } from "../../Services/Operation/productApi";
+import { add_To_Cart, getReviews } from "../../Services/Operation/productApi";
+import CreateReview from "../core/User/CreateReview";
 
 // Lazy load Reviews component
 const Reviews = lazy(() => import("./Reviews"));
@@ -11,6 +12,17 @@ const Reviews = lazy(() => import("./Reviews"));
 function ProductDetail() {
     const location = useLocation();
     const product = location.state?.ele;
+    const [review, setReview] = useState([]);
+
+    useEffect(() => {
+        (
+            async () => {
+                const response = await getReviews(product._id);
+                setReview(response);
+            }
+        )()
+    }, []);
+
 
     // Memoize initial state values
     const initialMainImg = useMemo(() => product?.images?.[0], [product]);
@@ -57,14 +69,17 @@ function ProductDetail() {
 
     // Memoize computed values
     const discountedPrice = useMemo(() => product.price + 1200, [product.price]);
+
+
     const rating = useMemo(() => ({
-        value: 4.8,
-        count: 2400
-    }), []);
-    
+        value: review.reduce((prev, cur) => cur.rating + prev, 0) / review.length || 0,
+        count: review.length
+    }), [review]);
+
     if (!product) {
         return <div className="p-20 text-center text-gray-600">Product Not Found</div>;
     }
+
 
     return (
         <div className="bg-white min-h-screen pt-20">
@@ -100,7 +115,7 @@ function ProductDetail() {
                             </div>
 
                             {/* Main Image */}
-                            <div className="flex-1 bg-gray-50 rounded-2xl overflow-hidden relative group border border-gray-100">
+                            <div className="flex-1 bg-gray-50 rounded-xl overflow-hidden relative group border border-gray-100">
                                 <img
                                     src={mainImg}
                                     className="w-full aspect-[4/5] object-cover transition-transform duration-500 group-hover:scale-110"
@@ -147,11 +162,12 @@ function ProductDetail() {
                 </div>
 
                 {/* Reviews Section with Suspense */}
-                <div className="mt-20 border-t border-gray-100 pt-10">
-                    <Suspense fallback={<ReviewsSkeleton />}>
-                        <Reviews />
-                    </Suspense>
-                </div>
+                {
+                    review.length > 0 && <div className="mt-0 border-t h-full border-gray-100 pt-18">
+                        <Suspense fallback={<ReviewsSkeleton />}>
+                            <Reviews review={review} />
+                        </Suspense>
+                    </div>}
             </div>
         </div>
     );
@@ -162,7 +178,7 @@ function ProductDetail() {
 const ThumbnailButton = React.memo(({ img, isActive, onHover }) => (
     <button
         onMouseEnter={() => onHover(img)}
-        className={`w-16 h-20 rounded-lg overflow-hidden border-2 transition-all
+        className={`w-16 h-20 rounded-md overflow-hidden border-2 transition-all cursor-pointer
             ${isActive
                 ? "border-blue-600 shadow-md"
                 : "border-gray-200 opacity-70 hover:opacity-100 hover:border-blue-400"
@@ -180,7 +196,7 @@ const ThumbnailButton = React.memo(({ img, isActive, onHover }) => (
 const MobileThumbnailButton = React.memo(({ img, isActive, onClick }) => (
     <button
         onClick={() => onClick(img)}
-        className={`w-20 h-24 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all
+        className={`w-20 h-24 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all
             ${isActive
                 ? "border-blue-600 shadow-md"
                 : "border-gray-200 opacity-70 hover:opacity-100"
@@ -293,7 +309,15 @@ const ProductInfo = React.memo(({
                 <span className="text-sm font-medium text-gray-700">
                     Free Delivery by{" "}
                     <span className="font-bold text-gray-900">
-                        Friday, 12 Oct
+
+                        {
+                            new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", {
+                                weekday: 'long',
+                                day: 'numeric',
+                                month: "short",
+                                year: 'numeric'
+                            })
+                        }
                     </span>
                 </span>
             </div>
@@ -329,7 +353,7 @@ const ProductInfo = React.memo(({
                 Product Details
             </h4>
             <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                {product.description}
+                {product.description.substr(0, 200)}
             </p>
         </div>
     </div>
@@ -352,7 +376,7 @@ const ReviewsSkeleton = () => (
     <div className="animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
         <div className="space-y-3">
-            <div className="h-24 bg-gray-200 rounded"></div>
+            <div className="h-24 bg-gray-200 rounded">hello</div>
             <div className="h-24 bg-gray-200 rounded"></div>
             <div className="h-24 bg-gray-200 rounded"></div>
         </div>

@@ -1,6 +1,6 @@
 import fetchData from "../../hooks/fetchData";
 import { toast } from "sonner";
-import { setLoading, setSignupData, setToken } from "../../Redux/slices/authSlice";
+import { setLoading, setSignupData, setToken, setRole } from "../../Redux/slices/authSlice";
 import { auth } from '../api';
 const { LOGIN_API, VERIFY_API, SENDOTP_API, SIGNUP_API, CHANGE_PASSWORD_API } = auth;
 
@@ -33,37 +33,37 @@ export function verify_otp(email, otp, navigate) {
             const response = await fetchData(VERIFY_API, "POST", { email, otp });
             if (response) {
                 localStorage.setItem('token', response.token);
+                localStorage.setItem('user', JSON.stringify(response.user));
                 dispatch(setToken(response.token));
+                dispatch(setSignupData(response.user));
 
-                console.log(response.user);
                 if (response.user.accountType == 'customer') {
-                    dispatch(setSignupData(response.user));
-                    localStorage.setItem('user', JSON.stringify(response.user));
+                    dispatch(setRole('customer'));
                     navigate('/');
                 }
-                else if (response.user.accountType == 'admin')
+                else if (response.user.accountType == 'admin') {
+                    dispatch(setRole('admin'));
                     navigate('/admin');
+                }
                 else {
-                    localStorage.setItem('seller-user', JSON.stringify(response.user));
+                    dispatch(setRole('seller'));
                     navigate('/seller');
                 }
             }
 
         } catch (error) {
             console.log("error while otp verification", error.message);
+            toast.error(error.response.mes);
         }
     }
 }
 
-export function sendOtp(email) {
-    return async function () {
-        try {
-            const response = await fetchData(SENDOTP_API, "POST", { email });
-
-            console.log(response);
-        } catch (error) {
-            console.log(error.message);
-        }
+export async function sendOtp(email) {
+    try {
+        await fetchData(SENDOTP_API, "POST", { email });
+    } catch (error) {
+        console.log(error.message);
+        toast.success('error while sending otp');
     }
 }
 
@@ -104,7 +104,6 @@ export function changePassword(email, password, navigate) {
     return async function () {
         setLoading(true);
         try {
-
             const response = await fetchData(CHANGE_PASSWORD_API, 'POST', { email, password });
             if (response) {
                 navigate('/login');
@@ -118,14 +117,19 @@ export function changePassword(email, password, navigate) {
 }
 
 export function logout(navigate) {
-    return function (dispatch) {
+    return (dispatch) => {
         dispatch(setToken(null));
         dispatch(setSignupData(null));
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        toast.success('logout comming soon');
-        navigate('/');
-    }
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        toast.success("Logged out successfully");
+
+        if (navigate) {
+            navigate("/");
+        }
+    };
 }
 
 export function signUp(navigate, email, password, firstName, lastName, accountType = undefined) {

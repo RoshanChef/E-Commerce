@@ -11,11 +11,13 @@ import {
     placeOrder,
     verify_payment
 } from "../../Services/Operation/productApi";
+import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
     const dispatch = useDispatch();
     const { signupData } = useSelector((state) => state.auth);
     const cartItems = signupData?.cart || [];
+    const navigate = useNavigate(); 
 
     const {
         register,
@@ -104,6 +106,7 @@ export default function Checkout() {
                             ...orderData,
                             paymentId: response.razorpay_payment_id,
                         }));
+                        navigate('/orders');
                         toast.success("Payment Received & Order Placed!");
                     } else {
                         toast.error("Payment verification failed");

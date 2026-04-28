@@ -29,7 +29,7 @@ function Footer() {
                     {/* Brand */}
                     <div className="lg:col-span-2 space-y-5">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold">
+                            <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">
                                 FS
                             </div>
                             <h2 className="text-lg font-black tracking-tight">

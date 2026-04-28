@@ -1,21 +1,23 @@
 import fetchData from "../../hooks/fetchData";
 import { toast } from "sonner";
 import { product, auth } from "../api";
-import { setSignupData } from "../../Redux/slices/authSlice";
+import { setLoading, setSignupData, setToken } from "../../Redux/slices/authSlice";
 
-const { CREATE_API, GET_ALLPRODUCT_API } = product;
+const { CREATE_API, GET_ALLPRODUCT_API, CREATE_REVIEW_API, GET_REVIEW_API } = product;
 const { ADD_API, VIEW_ORDER, VIEW_API, DELETE_API, PLACE_ORDER, REMOVE_API, DESCREASE_API, CREATE_ORDER_API, VERIFY_PAYMENT } = auth;
 
 export function createProduct(payload) {
-    return async function () {
+    return async function (dispatch) {
         try {
+            dispatch(setLoading(true));
             const response = await fetchData(CREATE_API, 'POST', payload);
-            console.log(response);
             toast.success('inserted successfully');
             return response;
         } catch (error) {
             console.log(error.message);
             toast.error(error.response);
+        } finally {
+            dispatch(setLoading(false));
         }
     }
 }
@@ -61,7 +63,17 @@ export function viewCart() {
                 return response;
             }
         } catch (error) {
-            console.log(error);
+            console.log(error.message);
+            if (error.response) {
+                console.log("Status:", error.response.status);
+                console.log("Data:", error.response.data);
+                if (error.response.data.error == 'jwt expired') {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('token');
+                    dispatch(setSignupData(null));
+                    dispatch(setToken(null));
+                }
+            }
             toast.error('Please Login first');
         }
     }
@@ -100,7 +112,6 @@ export function deleteFromCart(productId, size, stock) {
         }
     }
 }
-
 
 const loadScript = (src) => {
     return new Promise((resolve) => {
@@ -168,16 +179,15 @@ export function placeOrder(orderData) {
     }
 }
 
-export function viewOrders() {
-    return async function () {
-        try {
-            const response = await fetchData(VIEW_ORDER, 'GET');
-            return response;
-        }
-        catch (error) {
-            console.log(error.message);
-            return
-        }
+export async function viewOrders() {
+
+    try {
+        const response = await fetchData(VIEW_ORDER, 'GET');
+        return response;
+    }
+    catch (error) {
+        console.log(error.message);
+        return
     }
 }
 
@@ -185,7 +195,6 @@ export function getAllProducts() {
     return async function () {
         try {
             const response = await fetchData(GET_ALLPRODUCT_API, 'GET');
-            console.log(response);
             if (response.success)
                 return response.products;
         }
@@ -193,5 +202,32 @@ export function getAllProducts() {
             console.log(error.message);
             toast.error(error.message);
         }
+    }
+}
+
+export async function createReviews(formdata) {
+    try {
+        const response = await fetchData(CREATE_REVIEW_API, 'POST', formdata);
+        if (response.success) {
+            toast.success("Review created successfully");
+            return response;
+        }
+    }
+    catch (error) {
+        console.log(error.message);
+        toast.error(error.message);
+    }
+}
+
+export async function getReviews(productId) {
+    try {
+        const response = await fetchData(GET_REVIEW_API, 'POST', {productId});
+        if (response.success) {
+            return response.reviews;
+        }
+    }
+    catch (error) {
+        console.log(error.message);
+        toast.error(error.message);
     }
 }

@@ -16,15 +16,13 @@ export function getAllSellerProducts() {
     }
 }
 
-export function getAllOrders() {
-    return async function () {
-        try {
-            const response = await fetchData(GET_ALLORDERS, 'GET');
-            if (response.success)
-                return response.orders;
-        } catch (error) {
-            console.log(error.message);
-            toast.error(error.message);
-        }
+export async function getAllOrders() {
+    try {
+        const response = await fetchData(GET_ALLORDERS, 'GET');
+        if (response.success)
+            return response.orders;
+    } catch (error) {
+        console.log(error.message);
+        toast.error(error.message);
     }
 }

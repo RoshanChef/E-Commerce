@@ -28,11 +28,10 @@ export const product = {
     GET_ALLPRODUCT_API: BASE_URL + '/product/getAllProducts',
     GET_ALL_SELLER_PRODUCT_API: BASE_URL + '/product/getAllSellerProducts',
     GET_ALLORDERS: BASE_URL + '/product/getAllOrders',
-    GET_PRODUCT_API: BASE_URL + '/product/getCategory/:catId'
+    GET_PRODUCT_API: BASE_URL + '/product/getCategory/:catId',
+    CREATE_REVIEW_API: BASE_URL + '/product/create/Review',
+    GET_REVIEW_API: BASE_URL + '/product/getReview',
 }
-
-
-
 
 export const category = {
     READ_API: BASE_URL + "/category/read",

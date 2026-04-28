@@ -295,11 +295,11 @@ async function placeOrder(req, res) {
 
         let paymentMethod = orderData.paymentMethod;
         let transactionId = null;
-        let paymentStatus = "pending";
+        let paymentStatus = "Pending";
 
         if (paymentMethod == "online") {
             transactionId = req.body.paymentId;
-            paymentStatus = "completed"
+            paymentStatus = "Completed"
         }
 
 
@@ -324,8 +324,56 @@ async function placeOrder(req, res) {
     }
 }
 
+async function editProfile(req, res) {
+    try {
+        const userId = req.userId;
+
+        // Allow only specific fields to be updated
+        const allowedUpdates = ["firstName","lastName", "email", "image", "addresses"];
+        const updates = {};
+
+        Object.keys(req.body).forEach((key) => {
+            if (allowedUpdates.includes(key)) {
+                updates[key] = req.body[key];
+            }
+        });
+
+        // Check if no valid fields provided
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).send({
+                success: false,
+                message: "No valid fields to update",
+            });
+        }
+
+        const user = await userModel.findByIdAndUpdate(
+            userId,
+            { $set: updates },
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        return res.status(200).send({
+            success: true,
+            user,
+        });
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+}
+
 module.exports = {
-    addToCart, removeFromCart,
+    addToCart, removeFromCart, editProfile,
     viewCart, updateCart, verify_payment, placeOrder, viewCoupon,
     decreaseCartQuantity, createOrder
 };

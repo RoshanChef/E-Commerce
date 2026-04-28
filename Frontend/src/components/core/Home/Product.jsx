@@ -31,18 +31,18 @@ function Product() {
             </div>
 
             {/* Product Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
                 {data?.map((ele) => (
                     <Link
                         to={'/product/ele.description'}
                         key={ele._id}
                         state={{ ele }}
-                        className="group bg-white rounded-2xl p-3 border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col"
+                        className="group bg-white p-3 border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col"
                     > 
                         {/* Image Container */}
-                        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-[#F3F4F6]">
+                        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-[#F3F4F6]">
                             <img
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                className="w-full h-full object-cover transition-transform duration-500"
                                 src={ele.images[0]}
                                 alt={ele.productName}
                                 loading="lazy"

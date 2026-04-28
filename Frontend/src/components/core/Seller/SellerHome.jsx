@@ -1,19 +1,22 @@
 import { useState } from "react";
-import {
-  LayoutDashboard, ShoppingBag, Users, BarChart3,
-  Settings, Package, PanelLeft, Gem, Search,
-  Bell, ChevronDown, PlusCircle
-} from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Users, BarChart3, Settings, Package, PanelLeft, Gem, Search, Bell, ChevronDown, PlusCircle } from "lucide-react";
 
 import Dashboard from "./Dashboard";
 import AddProduct from "./AddProduct";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import SellerProducts from "./SellerProducts";
 import SellerOrders from "./SellerOrders";
+import { logout } from "../../../Services/Operation/authApi";
+import Analytics from "./Analytics";
 
 function SellerHome() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const [open, setOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Helper to render current view
   const renderContent = () => {
@@ -22,6 +25,8 @@ function SellerHome() {
       case "Add Product": return <AddProduct />;
       case 'Products': return <SellerProducts />;
       case 'Orders': return <SellerOrders />;
+      case "Analytics": return <Analytics />;
+      case "Settings": return <Settings />;
       default: return <Dashboard setActiveTab={setActiveTab} />;
     }
   };
@@ -140,17 +145,49 @@ function SellerHome() {
               <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
 
-            <button className="flex items-center gap-3 p-1.5 hover:bg-slate-100 rounded-2xl transition-all">
-              <div className="h-9 w-9 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden">
-                <img src={user.image} alt="Avatar" />
-              </div>
+            <div
+              className="relative inline-block"
+            >
+              {/* Trigger */}
+              <button
+                className="cursor-pointer flex items-center gap-3 hover:bg-slate-100 rounded-2xl transition-all"
 
-              <div className="hidden lg:block text-left">
-                <p className="text-xs font-bold text-slate-800">{user.firstName} {user.lastName}</p>
-                <p className="text-[10px] text-slate-500 font-medium">Pro Seller</p>
-              </div>
-              <ChevronDown size={16} className="text-slate-400" />
-            </button>
+                onMouseEnter={() => setOpen(true)}
+              >
+                <div onMouseLeave={() => setOpen(false)} className="h-9 w-9 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden">
+                  <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
+                </div>
+
+                <div className="hidden lg:block text-left">
+                  <p className="text-xs font-bold text-slate-800">
+                    {user.firstName} {user.lastName}
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-medium">Pro Seller</p>
+                </div>
+
+                <ChevronDown size={16} className="text-slate-400" />
+              </button>
+
+              {/* Dropdown */}
+              {open && (
+                <div onMouseLeave={() => setOpen(false)}
+                  className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] overflow-hidden p-1.5 z-50">
+
+                  <div className="px-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+                    My Profile
+                  </div>
+
+                  <div className="h-px bg-gray-200 my-1"></div>
+
+                  <div
+                    onClick={() => dispatch(logout(navigate))}
+                    className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                  >
+                    Logout
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

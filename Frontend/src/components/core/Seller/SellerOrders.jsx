@@ -172,29 +172,38 @@ function StatusBadge({ status }) {
     );
 }
 
-function OrderStatCard({ label, value, icon, color }) {
-    const variants = {
-        indigo: "from-indigo-600 to-blue-700 shadow-indigo-200",
-        emerald: "from-emerald-600 to-teal-700 shadow-emerald-200",
-        amber: "from-amber-500 to-orange-600 shadow-amber-200",
-        rose: "from-rose-600 to-pink-700 shadow-rose-200"
-    };
+function OrderStatCard({ label, value, icon }) {
+  return (
+    <div className="relative p-6 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm 
+      hover:shadow-xl transition-all duration-500 group overflow-hidden">
 
-    return (
-        <div className={`relative p-6 rounded-[1rem] bg-gradient-to-br ${variants[color]} text-white shadow-xl overflow-hidden group`}>
-            <div className="relative z-10">
-                <div className="bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-md mb-4 group-hover:scale-110 transition-transform duration-500">
-                    {icon}
-                </div>
-                <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">{label}</p>
-                <p className="text-3xl font-black tracking-tight">{value}</p>
-            </div>
-            
-            {/* Design elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-white/20 transition-colors" />
-            <div className="absolute bottom-4 right-4 opacity-20 group-hover:opacity-40 transition-opacity duration-500">
-                {icon}
-            </div>
+      {/* Subtle hover gradient overlay */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 
+        bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
+
+      <div className="relative z-10 flex items-start justify-between">
+        {/* Text */}
+        <div>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {label}
+          </p>
+          <h2 className="text-3xl font-semibold text-gray-900 mt-2 tracking-tight">
+            {value}
+          </h2>
         </div>
-    );
+
+        {/* Icon */}
+        <div className="w-11 h-11 flex items-center justify-center rounded-xl 
+          bg-gray-100 text-gray-700 
+          group-hover:bg-indigo-100 group-hover:text-indigo-600
+          transition-all duration-500">
+          {icon}
+        </div>
+      </div>
+
+      {/* Bottom accent line */}
+      <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-indigo-500 
+        group-hover:w-full transition-all duration-500" />
+    </div>
+  );
 }

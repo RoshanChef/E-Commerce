@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, HelpCircle, FileText, LifeBuoy, ShieldCheck } from "lucide-react";
@@ -33,7 +34,7 @@ function MoreDropdown() {
             onMouseLeave={() => setIsOpen(false)}
         >
             {/* Trigger */}
-            <div className="group text-xs flex gap-1 cursor-pointer items-center font-bold text-slate-400 tracking-widest hover:text-indigo-600 transition-colors select-none">
+            <div className="group text-xs flex gap-1 cursor-pointer items-center font-bold text-black tracking-widest hover:text-indigo-600 transition-colors select-none">
                 <p>MORE</p>
                 <ChevronRight
                     size={14}

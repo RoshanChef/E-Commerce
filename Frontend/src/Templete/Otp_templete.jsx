@@ -120,7 +120,7 @@ export default function Otp_templete({ email, purpose }) {
                 <div className="text-center mt-4">
                     <button
                         disabled={timeLeft > 0}
-                        onClick={() => { setTimeLeft(300), dispatch(sendOtp(email)) }}
+                        onClick={() => { setTimeLeft(300), (sendOtp(email)) }}
 
                         className={`text-sm transition
                                 ${timeLeft > 0

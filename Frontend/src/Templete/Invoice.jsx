@@ -69,8 +69,13 @@ export default function Invoice({ setInvoice, order }) {
                 {/* Header */}
                 <div className="flex justify-between">
                     <div>
-                        <div className="bg-indigo-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold mb-4">
-                            F
+                        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition">
+                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white w-12 h-12 rounded-xl flex items-center justify-center font-semibold text-lg shadow-md">
+                                F
+                            </div>
+                            <p className="text-3xl font-bold text-gray-800 tracking-wide">
+                                Fikri<span className="text-indigo-500 font-stretch-ultra-expanded">Shop</span>
+                            </p>
                         </div>
                         <h1 className="text-3xl font-black">INVOICE</h1>
                     </div>

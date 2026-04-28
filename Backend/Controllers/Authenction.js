@@ -24,19 +24,17 @@ async function sendOtp(req, res) {
 
 async function verify_otp(req, res) {
     const { email, otp } = req.body;
-    console.log(otp, email, 'see');
     let otp_verify = await otpModel.findOne({ email }).sort({ createdAt: -1 }).limit(1);
 
-    console.log(otp_verify);
     if (otp_verify?.otp != otp) {
         return res.status(404).send({ mes: 'Invalid Otp entered' });
     }
-    const user = await userModel.findOne({ email }).populate("cart.product"); 
+    const user = await userModel.findOne({ email }).populate("cart.product");
 
     // Generate JWT token
     const token = jwt.sign({ id: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: "3d" }
+        { expiresIn: "3d" } 
     );
 
     // Set cookie
@@ -47,7 +45,7 @@ async function verify_otp(req, res) {
 
     return res.status(200).json({
         mes: "User logged in successfully",
-        user,token
+        user, token
     });
 
 }
@@ -138,7 +136,6 @@ async function login(req, res) {
     }
 }
 
-
 //change password
 async function changePassword(req, res) {
     try {
@@ -163,6 +160,7 @@ async function changePassword(req, res) {
         })
     }
 }
+
 module.exports = {
     signUp, verify_otp,
     login, sendOtp, changePassword

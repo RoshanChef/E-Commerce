@@ -1,13 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    signupData: (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')): null) ||localStorage.getItem('seller-user') ?JSON.parse(localStorage.getItem('seller-user')) : null,
-    loading: false,
-    token: localStorage.getItem("token")
-        ? (localStorage.getItem("token"))
+    signupData: localStorage.getItem('user')
+        ? JSON.parse(localStorage.getItem('user'))
         : null,
-};
 
+    loading: false,
+    role: JSON.parse(localStorage.getItem('user'))?.accountType || null,
+    token: localStorage.getItem("token") || null,
+};
 const authSlice = createSlice({
     name: 'auth',
     initialState,
@@ -20,10 +21,13 @@ const authSlice = createSlice({
         },
         setToken: function (state, action) {
             state.token = action.payload;
+        },
+        setRole: function (state, action) {
+            state.role = action.payload;
         }
     }
 
 });
 
-export const { setLoading, setSignupData, setToken } = authSlice.actions;
+export const { setLoading, setSignupData, setToken, setRole } = authSlice.actions;
 export default authSlice.reducer; 

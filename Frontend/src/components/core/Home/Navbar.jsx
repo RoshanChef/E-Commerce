@@ -10,7 +10,7 @@ function Navbar() {
     const [searchValue, setSearchValue] = useState("");
     const [isScrolled, setIsScrolled] = useState(false);
 
-    const { signupData } = useSelector(state => state.auth);
+    const { signupData, role } = useSelector(state => state.auth);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -31,7 +31,7 @@ function Navbar() {
                 <div className="bg-indigo-600 p-1.5 rounded-lg shadow-indigo-200 shadow-lg">
                     <Package2 className="text-white" size={22} />
                 </div>
-                <span className="text-xl font-bold tracking-tight text-slate-800">
+                <span className=" text-sm md:text-xl font-bold tracking-tight text-slate-800">
                     Fikri<span className="text-indigo-600">Shop</span>
                 </span>
             </Link>
@@ -70,7 +70,7 @@ function Navbar() {
                     </span>}
                 </Link>
 
-                {signupData ? (
+                {signupData && role == 'customer' ? (
                     <div
                         className="relative"
                         onMouseEnter={() => setShow(true)}

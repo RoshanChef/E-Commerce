@@ -14,7 +14,7 @@ function Auth(req, res, next) {
     }
     catch (err) {
         console.log(err.message);
-        res.status(404).send({ mes: 'Wrong token passed' });
+        res.status(404).send({ error: err.message, mes: 'Wrong token passed' });
     }
 
 }

@@ -22,7 +22,14 @@ export default function SellerProducts() {
         const totalItems = products.length;
 
         // Summing up price of all items
-        const totalValue = products.reduce((acc, curr) => acc + (curr.price || 0), 0);
+        const totalValue = products.reduce((acc, curr) => {
+            const totalStock = curr.sizes.reduce(
+                (sum, size) => sum + (size.stock || 0),
+                0
+            );
+
+            return acc + (curr.price * totalStock);
+        }, 0);  
 
         // Calculating items with total stock < 10 across all sizes
         const lowStockItems = products.filter(product => {
@@ -118,7 +125,7 @@ export default function SellerProducts() {
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button className="p-2 hover:bg-white rounded-lg shadow-sm text-slate-600 hover:text-blue-600"><Edit3 size={18} /></button>
-                                                <button className="p-2 hover:bg-white rounded-lg shadow-sm text-slate-600 hover:text-rose-600 cursor-pointer" onClick={()=>dispatch(deleteProduct(product._id))}><Trash2 size={18} /></button>
+                                                <button className="p-2 hover:bg-white rounded-lg shadow-sm text-slate-600 hover:text-rose-600 cursor-pointer" onClick={() => dispatch(deleteProduct(product._id))}><Trash2 size={18} /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -141,7 +148,7 @@ function StatCard({ label, value, icon, color }) {
         rose: "bg-rose-50 text-rose-600"
     };
     return (
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-5">
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-5">
             <div className={`p-4 rounded-2xl ${colors[color]}`}>{icon}</div>
             <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</p>

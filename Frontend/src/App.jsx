@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { toast, Toaster } from 'sonner';
 
 // Components
 import Navbar from './components/core/Home/Navbar';
@@ -10,8 +10,8 @@ import Login from './pages/Login';
 import Signup from './components/core/Login/Signup';
 import VerifyOtp from './components/core/Login/VerifyOtp';
 import ForgotEmail from './components/core/Login/ForgotEmail';
-import ForgotOtp from './components/core/Login/Forgot_otp'; // CamelCase suggested
-import ForgotPass from './components/core/Login/Forgot_pass'; // CamelCase suggested
+import ForgotOtp from './components/core/Login/Forgot_otp';
+import ForgotPass from './components/core/Login/Forgot_pass';
 
 // Pages
 import Home from './pages/Home';
@@ -24,10 +24,34 @@ import AddProduct from './components/core/Seller/AddProduct';
 import AddToCart from './components/feature/AddToCart';
 import Checkout from './components/feature/Checkout';
 import Orders from './components/core/User/Orders';
+import SellerRoute from './components/core/Auth/SellerRoute';
+import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 
 function App() {
   const location = useLocation();
+  const { role } = useSelector(state => state.auth);
+  console.log(role);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      toast.success("Back to online");
+    };
+
+    const handleOffline = () => {
+      toast.error("You are offline. Please check your connection.");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
 
   return (
     <>
@@ -60,12 +84,14 @@ function App() {
 
 
           {/* Seller Routes */}
-          <Route path='/seller' element={<SellerHome />} />
-          <Route path="/seller-login" element={<Login />} />
-          <Route path="/seller/add-product" element={<AddProduct />} />
-          <Route path='/seller-ad' element={<Seller />} />
-          <Route path='/seller-ad/successs' element={<SuccessStories />} />
+          <Route element={<SellerRoute />}>
+            <Route path='/seller' element={<SellerHome />} />
+            <Route path="/seller/add-product" element={<AddProduct />} />
+            <Route path='/seller-ad' element={<Seller />} />
+            <Route path='/seller-ad/successs' element={<SuccessStories />} />
+          </Route>
 
+          <Route path="/seller-login" element={<Login />} />
 
           {/* Admin Routes */}
           <Route path='/admin' element={<SellerHome />} />

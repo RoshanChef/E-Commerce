@@ -1,5 +1,6 @@
 const orderModel = require("../Models/Order");
 const productModel = require("../Models/Product");
+const bannerModel = require('../Models/Banner');
 const { uploadToCloudinary } = require("../Services/uploadToCloudinary");
 
 
@@ -36,7 +37,6 @@ async function createProduct(req, res) {
             });
         }
 
-        // multer files
         const { images } = req.files;
 
         if (!images || images.length < 4) {
@@ -163,7 +163,7 @@ async function deleteProduct(req, res) {
             })
         }
         res.status(200).send({
-            success : true,
+            success: true,
             message: "Product deleted successfully",
             product
         })
@@ -195,7 +195,7 @@ async function getAllSellerProducts(req, res) {
 // for the user 
 async function getAllProducts(req, res) {
     try {
-        const products = await productModel.find().populate('category');
+        const products = await productModel.find().populate('category').limit(10);
 
         if (!products)
             return res.status(404).send({ mes: "There is no Product for sell" });
@@ -246,6 +246,34 @@ async function getAllOrders(req, res) {
         })
     } catch (error) {
         console.log(error.message);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal Server Error"
+        })
+    }
+}
+
+async function createBanner(req, res) {
+    try {
+        const banner = await bannerModel.create(req.body);
+        res.status(200).send({
+            success: true,
+            banner: banner
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || "Internal Server Error"
+        })
+    }
+}
+async function showBanner(req, res) {
+    try {
+        const banner = await bannerModel.find().limit(6);
+        return res.status(200).json({
+            success: true,
+            banner: banner
+        })
+    } catch (error) {
         return res.status(500).json({
             success: false,
             message: error.message || "Internal Server Error"
