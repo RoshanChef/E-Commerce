@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { LayoutDashboard, ShoppingBag, Users, BarChart3, Settings, Package, PanelLeft, Gem, Search, Bell, ChevronDown, PlusCircle } from "lucide-react";
 
-import Dashboard from "./Dashboard";
+import Dashboard from "../../feature/Seller/Dashboard";
 import AddProduct from "./AddProduct";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import SellerProducts from "./SellerProducts";
-import SellerOrders from "./SellerOrders";
+import SellerProducts from "../../feature/Seller/SellerProducts";
+import SellerOrders from "../../feature/Seller/SellerOrders";
+import Analytics from "../../feature/Seller/Analytics";
 import { logout } from "../../../Services/Operation/authApi";
-import Analytics from "./Analytics";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 function SellerHome() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -27,6 +27,7 @@ function SellerHome() {
       case 'Orders': return <SellerOrders />;
       case "Analytics": return <Analytics />;
       case "Settings": return <Settings />;
+      
       default: return <Dashboard setActiveTab={setActiveTab} />;
     }
   };
@@ -77,13 +78,6 @@ function SellerHome() {
             label="Orders"
             active={activeTab === "Orders"}
             onClick={() => setActiveTab("Orders")}
-            isCollapsed={isCollapsed}
-          />
-          <SidebarItem
-            icon={<Users size={20} />}
-            label="Customers"
-            active={activeTab === "Customers"}
-            onClick={() => setActiveTab("Customers")}
             isCollapsed={isCollapsed}
           />
           <SidebarItem

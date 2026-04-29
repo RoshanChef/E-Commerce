@@ -12,6 +12,7 @@ require('dotenv').config();
 const errorHandler = require('./middlewares/Error');
 const productRouter = require('./Routes/productRoute');
 const categoryRouter = require('./Routes/CategoryRoute');
+const searchRouter = require('./Routes/searchRoute');
 const fileUpload = require('express-fileupload');
 
 // Mongodb Connection
@@ -55,7 +56,7 @@ app.use(cookieParser());
 app.use('/api/auth', userRoute);
 app.use('/api/product', productRouter);
 app.use('/api/category', categoryRouter);
-
+app.use('/api/search' , searchRouter);
 
 app.get('/ping', (req, res) => {
     res.send('pong')

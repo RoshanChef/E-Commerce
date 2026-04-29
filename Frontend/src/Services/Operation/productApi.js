@@ -191,8 +191,7 @@ export async function viewOrders() {
     }
 }
 
-export function getAllProducts() {
-    return async function () {
+export async function getAllProducts() {
         try {
             const response = await fetchData(GET_ALLPRODUCT_API, 'GET');
             if (response.success)
@@ -202,7 +201,6 @@ export function getAllProducts() {
             console.log(error.message);
             toast.error(error.message);
         }
-    }
 }
 
 export async function createReviews(formdata) {
@@ -221,10 +219,11 @@ export async function createReviews(formdata) {
 
 export async function getReviews(productId) {
     try {
-        const response = await fetchData(GET_REVIEW_API, 'POST', {productId});
+        const response = await fetchData(GET_REVIEW_API, 'POST', { productId });
         if (response.success) {
             return response.reviews;
         }
+        return [];
     }
     catch (error) {
         console.log(error.message);

@@ -242,87 +242,7 @@ async function viewCoupon(req, res) {
     }
 }
 
-async function createOrder(req, res) {
-    try {
-        const { total } = req.body;
 
-        const options = {
-            amount: total * 100, // amount in paise (₹ total * 100)
-            currency: "INR",
-            receipt: "receipt_order_1"
-        };
-
-        const order = await razorpay.orders.create(options);
-        res.status(200).send({ order });
-    } catch (err) {
-        res.status(500).send(err);
-    }
-}
-
-async function verify_payment(req, res) {
-    const {
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature
-    } = req.body;
-
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-
-    const expectedSignature = crypto
-        .createHmac("sha256", process.env.RAZOR_SECRET)
-        .update(body)
-        .digest("hex");
-
-    if (expectedSignature === razorpay_signature) {
-        res.json({ success: true });
-    } else {
-        res.status(400).json({ success: false });
-    }
-}
-
-async function placeOrder(req, res) {
-    try {
-        const user = req.userId;
-        const orderData = req.body;
-
-        let products = orderData.items.map((item) => {
-            return {
-                product: item.product._id,
-                quantity: item.quantity
-            }
-        })
-        let totalAmount = Number(orderData.totalAmount);
-
-        let paymentMethod = orderData.paymentMethod;
-        let transactionId = null;
-        let paymentStatus = "Pending";
-
-        if (paymentMethod == "online") {
-            transactionId = req.body.paymentId;
-            paymentStatus = "Completed"
-        }
-
-
-        const order = await orderModel.create({
-            user,
-            products,
-            totalAmount,
-            paymentStatus,
-            paymentMethod,
-            transactionId
-        })
-
-        const userData = await userModel.findByIdAndUpdate(user, { $set: { cart: [] } });
-
-        return res.status(200).send({
-            mes: 'order send successfully',
-            order, user: userData
-        })
-
-    } catch (error) {
-        console.log(error.message);
-    }
-}
 
 async function editProfile(req, res) {
     try {
@@ -374,6 +294,6 @@ async function editProfile(req, res) {
 
 module.exports = {
     addToCart, removeFromCart, editProfile,
-    viewCart, updateCart, verify_payment, placeOrder, viewCoupon,
-    decreaseCartQuantity, createOrder
+    viewCart, updateCart, viewCoupon,
+    decreaseCartQuantity
 };

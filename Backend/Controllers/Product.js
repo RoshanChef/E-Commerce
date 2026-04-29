@@ -3,7 +3,6 @@ const productModel = require("../Models/Product");
 const bannerModel = require('../Models/Banner');
 const { uploadToCloudinary } = require("../Services/uploadToCloudinary");
 
-
 // for the sellers
 async function createProduct(req, res) {
     try {
@@ -266,6 +265,7 @@ async function createBanner(req, res) {
         })
     }
 }
+
 async function showBanner(req, res) {
     try {
         const banner = await bannerModel.find().limit(6);
@@ -280,6 +280,7 @@ async function showBanner(req, res) {
         })
     }
 }
+
 module.exports = {
     createProduct, updateProduct, deleteProduct,
     getProductByCat, getAllProducts, getAllOrders, getAllSellerProducts

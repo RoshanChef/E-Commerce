@@ -1,31 +1,9 @@
-import { ChevronsRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import React from 'react'
 import { Link } from "react-router-dom";
-import { getAllProducts } from "../../../Services/Operation/productApi";
 
-function Product() {
-    let [data, setData] = useState([]);
-
-    useEffect(() => {
-        async function main() {
-            const val = await getAllProducts();
-            setData(val);
-        }
-        main();
-    }, []);
-
+export default function Card({data}) {
     return (
-        <div className="min-h-screen bg-[#F9FAFB] pt-24 px-6 md:px-12">
-            {/* Breadcrumbs/Category Header */}
-            <div className="flex items-center gap-3 mb-8 text-sm text-gray-500">
-                <Link to="/" className="hover:text-black transition-colors">Home</Link>
-                <ChevronsRight size={14} />
-                <span className="font-semibold text-black underline underline-offset-4 decoration-indigo-600">
-                    All Collections
-                </span>
-            </div>
-
-            {/* Product Grid */}
+        <>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
                 {data?.map((ele) => (
                     <Link
@@ -42,10 +20,6 @@ function Product() {
                                 alt={ele.productName}
                                 loading="lazy"
                             />
-                            {/* Simple Badge like "New" or "Best Seller" if needed */}
-                            <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
-                                New
-                            </div>
                         </div>
 
                         {/* Product Details */}
@@ -69,8 +43,6 @@ function Product() {
                     </Link>
                 ))}
             </div>
-        </div>
-    );
+        </>
+    )
 }
-
-export default Product;

@@ -27,6 +27,7 @@ import Orders from './components/core/User/Orders';
 import SellerRoute from './components/core/Auth/SellerRoute';
 import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
+import MenuProduct from './components/core/Menu/MenuProduct';
 
 
 function App() {
@@ -81,6 +82,7 @@ function App() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/addToCart" element={<AddToCart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/search/:searchValue" element={<MenuProduct />} />
 
 
           {/* Seller Routes */}

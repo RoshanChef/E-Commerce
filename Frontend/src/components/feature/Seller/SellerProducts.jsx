@@ -29,7 +29,7 @@ export default function SellerProducts() {
             );
 
             return acc + (curr.price * totalStock);
-        }, 0);  
+        }, 0);
 
         // Calculating items with total stock < 10 across all sizes
         const lowStockItems = products.filter(product => {
@@ -57,7 +57,7 @@ export default function SellerProducts() {
             {/* Upper Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 italic">
+                    <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
                         Inventory <span className="text-blue-600 not-italic">Pro</span>
                     </h1>
                     <p className="text-slate-500 mt-1 font-medium">Real-time overview of your store's performance.</p>
@@ -139,7 +139,6 @@ export default function SellerProducts() {
     );
 }
 
-// Reusable Stat Card Component
 function StatCard({ label, value, icon, color }) {
     const colors = {
         blue: "bg-blue-50 text-blue-600",
@@ -147,12 +146,24 @@ function StatCard({ label, value, icon, color }) {
         emerald: "bg-emerald-50 text-emerald-600",
         rose: "bg-rose-50 text-rose-600"
     };
+
+    // Determine if this is the "featured" violet card
+    const isViolet = color === 'violet';
+
     return (
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-5">
-            <div className={`p-4 rounded-2xl ${colors[color]}`}>{icon}</div>
+        <div className={`bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-center gap-5 transition-all ${isViolet ? 'ring-2 ring-violet-100 shadow-md' : ''}`}>
+
+            <div className={`rounded-2xl flex items-center justify-center transition-all ${colors[color]}`}>
+                {icon}
+            </div>
+
             <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-                <p className="text-2xl font-black text-slate-800">{value}</p>
+                <p className={`text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1  ${isViolet ? 'px-8 grow scale-110 shadow-lg shadow-violet-100' : ''}`}>
+                    {label}
+                </p>
+                <p className={`font-black text-slate-800 tracking-tight ${isViolet ? 'text-3xl' : 'text-2xl'}`}>
+                    {value}
+                </p>
             </div>
         </div>
     );

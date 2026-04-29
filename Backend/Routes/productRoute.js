@@ -7,7 +7,9 @@ const productRouter = express.Router();
 productRouter.get('/getCategory/:catId', getProductByCat);
 productRouter.get('/getAllProducts', getAllProducts);
 
-// Seller-only routes
+// Review orders
+productRouter.post('/create/Review',Auth, createReview);
+productRouter.post('/getReview', getProductReviews);
 
 // POST   /api/products/
 // PATCH  /api/products/:id
@@ -19,8 +21,6 @@ productRouter.post('/create/', isSeller, createProduct);
 productRouter.patch('/update/:productId', isSeller, updateProduct);
 productRouter.delete('/delete/:productId', isSeller, deleteProduct);
 
-// Review orders
-productRouter.post('/create/Review', createReview);
-productRouter.post('/getReview', getProductReviews);
+
 
 module.exports = productRouter;

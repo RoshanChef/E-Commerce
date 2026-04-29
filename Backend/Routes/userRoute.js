@@ -3,8 +3,8 @@ const userRouter = express.Router();
 const { signUp, verify_otp, login, sendOtp, changePassword } = require('../Controllers/Authenction');
 const passport = require("passport");
 const { Auth } = require("../Middlewares/Auth");
-const { addToCart, placeOrder, removeFromCart, updateCart, viewCart, viewCoupon, decreaseCartQuantity, verify_payment, createOrder, editProfile } = require("../Controllers/User");
-const { viewOrders } = require('../Controllers/Order');
+const { addToCart, removeFromCart, updateCart, viewCart, viewCoupon, decreaseCartQuantity,  editProfile } = require("../Controllers/User");
+const { viewOrders, placeOrder, verify_payment, createOrder, updateStatus } = require('../Controllers/Order');
 
 /* ================= AUTH ROUTES ================= */
 userRouter.post('/signUp', signUp);
@@ -25,6 +25,7 @@ userRouter.post('/create-order', Auth, createOrder);
 userRouter.post('/verify-payment', Auth, verify_payment);
 userRouter.post('/place-order', Auth, placeOrder);
 userRouter.get('/view-order', Auth, viewOrders);
+userRouter.post('/update-status', Auth, updateStatus);
 
 
 /* ================= USER ROUTES ================= */
