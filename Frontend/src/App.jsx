@@ -25,9 +25,11 @@ import AddToCart from './components/feature/AddToCart';
 import Checkout from './components/feature/Checkout';
 import Orders from './components/core/User/Orders';
 import SellerRoute from './components/core/Auth/SellerRoute';
+import AdminRoute from './components/core/Auth/AdminRoute';
 import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import MenuProduct from './components/core/Menu/MenuProduct';
+import AdminBoard from './components/core/Admin/AdminBoard';
 
 
 function App() {
@@ -66,8 +68,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
 
-          {/* Auth Routes */}
+          {/* Login Routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/seller-login" element={<Login />} />
+          <Route path='/admin-login' element={<Login />} />
+
+          {/* Auth Routes */}
           <Route path="/signup" element={<Signup />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
 
@@ -93,10 +99,11 @@ function App() {
             <Route path='/seller-ad/successs' element={<SuccessStories />} />
           </Route>
 
-          <Route path="/seller-login" element={<Login />} />
-
           {/* Admin Routes */}
-          <Route path='/admin' element={<SellerHome />} />
+          <Route element={< AdminRoute />}>
+            <Route path='/admin' element={<AdminBoard />} />
+
+          </Route>
 
           {/* 404 Catch-all (Optional but recommended) */}
           <Route path="*" element={<NotFound />} />

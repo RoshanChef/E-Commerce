@@ -228,19 +228,6 @@ async function updateCart(req, res) {
     }
 }
 
-async function viewCoupon(req, res) {
-    try {
-        const coupons = await couponModel.find({
-            isActive: true,
-            expiryDate: { $gte: new Date() }
-        });
-
-        return res.status(200).json({ coupons });
-    } catch (error) {
-        console.error(error.message);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
-}
 
 
 
@@ -249,7 +236,7 @@ async function editProfile(req, res) {
         const userId = req.userId;
 
         // Allow only specific fields to be updated
-        const allowedUpdates = ["firstName","lastName", "email", "image", "addresses"];
+        const allowedUpdates = ["firstName", "lastName", "email", "image", "addresses"];
         const updates = {};
 
         Object.keys(req.body).forEach((key) => {
@@ -294,6 +281,6 @@ async function editProfile(req, res) {
 
 module.exports = {
     addToCart, removeFromCart, editProfile,
-    viewCart, updateCart, viewCoupon,
+    viewCart, updateCart,
     decreaseCartQuantity
 };

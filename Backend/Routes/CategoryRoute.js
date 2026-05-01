@@ -1,12 +1,13 @@
 const express = require('express');
-const { Auth, isSellerOrAdmin } = require('../Middlewares/Auth');
+const { Auth, isSellerOrAdmin, isAdmin } = require('../Middlewares/Auth');
 const { createCategory, viewCategory } = require('../Controllers/Category');
+const { viewCoupon } = require('../Controllers/User');
 const categoryRouter = express.Router();
 
-categoryRouter.use(Auth, isSellerOrAdmin);
 
-categoryRouter.post('/create', createCategory);
-categoryRouter.get('/read', viewCategory);
+categoryRouter.post('/create', Auth, isAdmin, createCategory);
+categoryRouter.post('/view-coupons', Auth, isAdmin, viewCoupon);
+categoryRouter.get('/read',Auth, isSellerOrAdmin, viewCategory);
 
 
 module.exports = categoryRouter; 

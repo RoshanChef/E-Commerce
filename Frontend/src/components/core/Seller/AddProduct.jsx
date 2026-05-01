@@ -9,9 +9,8 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
 function AddProduct() {
+    const { loading } = useSelector(state => state.auth);
     const dispatch = useDispatch();
-    // Assuming loading state comes from your product/auth slice
-    const { loading } = useSelector(state => state.auth); 
 
     const {
         register,
@@ -29,7 +28,7 @@ function AddProduct() {
             discount: 0,
             category: "",
             sizes: [{ size: "", stock: "" }],
-            images: [], 
+            images: [],
         },
     });
 
@@ -44,11 +43,12 @@ function AddProduct() {
 
     useEffect(() => {
         async function fetchCats() {
-            const val = await dispatch(viewCategory());
+            const val = await viewCategory();
             if (val) setCategory(val);
+            console.log(val);
         }
         fetchCats();
-    }, [dispatch]);
+    }, []);
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
@@ -80,7 +80,7 @@ function AddProduct() {
             formData.append("price", Number(data.price));
             formData.append("discount", Number(data.discount));
             formData.append("category", data.category);
-            
+
             const formattedSizes = data.sizes.map((s) => ({
                 size: s.size,
                 stock: Number(s.stock),
@@ -111,7 +111,7 @@ function AddProduct() {
 
     return (
         <div className="relative min-h-screen bg-slate-50 p-6 flex justify-center items-start">
-            
+
             {/* STYLISH GLASSY LOADER - Only shows when loading is true */}
             {loading && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/20 backdrop-blur-md">

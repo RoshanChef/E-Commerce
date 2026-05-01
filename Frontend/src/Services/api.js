@@ -19,7 +19,7 @@ export const auth = {
     VERIFY_PAYMENT: BASE_URL + '/auth/verify-payment',
     PLACE_ORDER: BASE_URL + '/auth/place-order',
     VIEW_ORDER: BASE_URL + '/auth/view-order',
-    UPDATE_STATUS_API : BASE_URL + '/auth/update-status',
+    UPDATE_STATUS_API: BASE_URL + '/auth/update-status',
 }
 
 export const product = {
@@ -36,6 +36,8 @@ export const product = {
 
 export const category = {
     READ_API: BASE_URL + "/category/read",
+    CREATE_CAT_API: BASE_URL + "/category/create",
+    VIEW_COUPONS_API : BASE_URL + "/category/view-coupons",
 }
 
 

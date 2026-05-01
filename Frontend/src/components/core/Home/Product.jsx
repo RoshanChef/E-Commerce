@@ -5,11 +5,14 @@ import { getAllProducts } from "../../../Services/Operation/productApi";
 
 function Product() {
     let [data, setData] = useState([]);
+    // let [earbuds, setEar] = useState([]);
 
     useEffect(() => {
         async function main() {
-            const val = await getAllProducts();
+            let val = await getAllProducts();
             setData(val);
+
+          // val= await getEarbuds(); 
         }
         main();
     }, []);
@@ -69,6 +72,57 @@ function Product() {
                     </Link>
                 ))}
             </div>
+
+            {/* banner of earbuds */}
+            <div className="min-h-[300px] md:h-54 w-full my-10 bg-indigo-600 flex flex-col md:flex-row items-center justify-between px-8 md:px-12 overflow-hidden rounded-xl shadow-xl relative py-8 md:py-0">
+
+                {/* Left content: Text & Button */}
+                <div className="text-center md:text-left text-white z-20 mb-8 md:mb-0">
+                    <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest bg-indigo-500 px-3 py-1 rounded-full mb-3 inline-block">
+                        Limited Edition
+                    </span>
+                    <h2 className="text-3xl md:text-4xl font-black mb-2 tracking-tight leading-tight">
+                        Wireless <span className="text-indigo-200">Earbuds</span>
+                    </h2>
+                    <p className="text-indigo-100 opacity-90 max-w-xs mx-auto md:mx-0 mb-6 text-sm md:text-base">
+                        Experience true freedom with premium sound quality and active noise cancellation.
+                    </p>
+                </div>
+
+                {/* Right content: Layered Images */}
+                <div className="relative h-48 md:h-full w-full md:w-1/2 flex items-center justify-center lg:justify-end">
+
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 md:w-48 md:h-48 bg-indigo-400 rounded-full blur-[60px] md:blur-[80px] opacity-40"></div>
+
+                    <img
+                        src="/Earbuds.png"
+                        alt="earbuds background"
+                        className="h-32 md:h-40 lg:h-48 object-contain absolute right-1/2 md:right-40 translate-x-1/2 md:translate-x-0 top-0 md:top-10 opacity-40 blur-[1px] transform -rotate-12 select-none"
+                    />
+
+                    {/* Primary Foreground Image */}
+                    <img
+                        draggable={false}
+                        src="/Earbuds2.png"
+                        alt="earbuds foreground"
+                        className="h-40 md:h-48 lg:h-56 object-contain z-10 drop-shadow-[0_20px_35px_rgba(0,0,0,0.3)] transform rotate-6 hover:rotate-0 hover:scale-105 transition-all duration-500 ease-out cursor-pointer"
+                    />
+
+                    {/* Floating Badge - Hidden on very small screens, visible from md up */}
+                    <div className="hidden sm:block absolute bottom-4 md:bottom-10 right-4 md:right-10 z-20 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter shadow-xl">
+                        24h Battery
+                    </div>
+                </div>
+
+                <div className="absolute -bottom-10 -right-10 w-48 h-48 md:w-64 md:h-64 bg-indigo-500 rounded-full opacity-20 blur-3xl"></div>
+            </div>
+
+            {/* Earbuds section */}
+            <div>
+
+            </div>
+
+
         </div>
     );
 }
