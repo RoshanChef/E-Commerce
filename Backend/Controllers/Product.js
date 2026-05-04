@@ -12,7 +12,7 @@ async function createProduct(req, res) {
             price,
             discount,
             category,
-            sizes,
+            sizes = '[]',
         } = req.body;
 
         // sizes will be string (from FormData)
@@ -27,9 +27,7 @@ async function createProduct(req, res) {
             price == null ||
             discount == null ||
             !category ||
-            !sizes ||
-            !Array.isArray(sizes) ||
-            sizes.length === 0
+            !Array.isArray(sizes)
         ) {
             return res.status(400).send({
                 message: "Please enter all required fields",
@@ -194,7 +192,7 @@ async function getAllSellerProducts(req, res) {
 // for the user 
 async function getAllProducts(req, res) {
     try {
-        const products = await productModel.find().populate('category').limit(10);
+        const products = await productModel.find().populate('category');
 
         if (!products)
             return res.status(404).send({ mes: "There is no Product for sell" });

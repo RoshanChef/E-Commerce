@@ -3,7 +3,6 @@ const productModel = require("../Models/Product");
 const userModel = require("../Models/User");
 const Razorpay = require('razorpay');
 const dotenv = require('dotenv');
-const crypto = require("crypto");
 const orderModel = require("../Models/Order");
 dotenv.config();
 
@@ -22,10 +21,7 @@ async function addToCart(req, res) {
             return res.status(400).json({ mes: "Product ID is required" });
         }
 
-        if (!size) {
-            return res.status(400).json({ mes: "Size is required" });
-        }
-
+       
         const user = await userModel.findById(userId);
         const product = await productModel.findById(productId);
 
@@ -36,7 +32,6 @@ async function addToCart(req, res) {
         if (!product) {
             return res.status(404).json({ mes: "Product not found" });
         }
-
         // find size index
         const sizeIndex = product.sizes.findIndex((item) => item.size === size);
 
@@ -228,9 +223,6 @@ async function updateCart(req, res) {
     }
 }
 
-
-
-
 async function editProfile(req, res) {
     try {
         const userId = req.userId;
@@ -280,7 +272,7 @@ async function editProfile(req, res) {
 }
 
 module.exports = {
-    addToCart, removeFromCart, editProfile,
-    viewCart, updateCart,
-    decreaseCartQuantity
+    addToCart, removeFromCart,
+    editProfile, viewCart,
+    updateCart,decreaseCartQuantity
 };

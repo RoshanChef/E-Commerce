@@ -46,7 +46,7 @@ function Navbar() {
         timerRef.current = setTimeout(async () => {
             let res = await searchResult(searchValue);
             setResult(res || []);
-        }, 300);
+        }, 100);
 
         return () => clearTimeout(timerRef.current);
     }, [searchValue]);

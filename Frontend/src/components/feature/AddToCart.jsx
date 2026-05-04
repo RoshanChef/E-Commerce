@@ -27,7 +27,7 @@ export default function AddToCart() {
 
     const subtotal = data.reduce(
         (total, item) => total
-            + item.quantity * (item?.product?.price - (item?.product?.price*item?.product?.discount)/100 || 0),
+            + item.quantity * (item?.product?.price - (item?.product?.price * item?.product?.discount) / 100 || 0),
         0
     );
 
@@ -113,12 +113,12 @@ export default function AddToCart() {
                 {/* Left Cart */}
                 <div className="flex-1">
                     <div className="flex items-center gap-3 mb-10">
-                        <div className="p-3 rounded-2xl bg-white shadow-md border border-slate-100">
+                        <div className="p-1 md:p-3 rounded-2xl bg-white shadow-md border border-slate-100">
                             <ShoppingBag className="text-indigo-600" size={24} />
                         </div>
 
                         <div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+                            <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">
                                 Shopping Cart
                             </h1>
                             <p className="text-sm text-slate-500 font-medium">
@@ -126,7 +126,7 @@ export default function AddToCart() {
                             </p>
                         </div>
 
-                        <span className="ml-auto px-4 py-2 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100">
+                        <span className="ml-auto px-2 py-0.5 md:px-4 md:py-2 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100">
                             {data.length} ITEMS
                         </span>
                     </div>
@@ -159,7 +159,7 @@ export default function AddToCart() {
                                             className="w-full h-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-110"
                                         />
                                         <span className="absolute top-2 left-2 px-3 py-1 bg-white/90 backdrop-blur-md text-xs font-bold rounded-full shadow-sm">
-                                            ₹{ele?.product?.price}
+                                            ₹{ele?.product?.price - Math.round(ele?.product?.price * ele?.product?.discount / 100)}
                                         </span>
                                     </div>
 
@@ -171,12 +171,12 @@ export default function AddToCart() {
                                                     {ele?.product?.productName}
                                                 </h3>
 
-                                                <p className="text-sm text-slate-500 mt-1 font-medium">
+                                                {ele?.size !== "oneSize" && <p className="text-sm text-slate-500 mt-1 font-medium">
                                                     Size:{" "}
                                                     <span className="px-3 py-1 bg-indigo-50 text-indigo-600 font-bold rounded-full text-xs uppercase border border-indigo-100">
                                                         {ele?.size || "N/A"}
                                                     </span>
-                                                </p>
+                                                </p>}
                                             </div>
 
                                             <button
@@ -216,7 +216,7 @@ export default function AddToCart() {
                                                     Total
                                                 </p>
                                                 <p className="text-2xl font-black text-slate-900">
-                                                    ₹{(ele?.product?.price * ele?.quantity).toLocaleString()}
+                                                    ₹{((ele?.product?.price - Math.round(ele?.product?.price * ele?.product?.discount / 100))* ele?.quantity).toLocaleString()}
                                                 </p>
                                             </div>
                                         </div>

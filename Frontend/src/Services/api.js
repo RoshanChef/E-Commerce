@@ -37,7 +37,10 @@ export const product = {
 export const category = {
     READ_API: BASE_URL + "/category/read",
     CREATE_CAT_API: BASE_URL + "/category/create",
-    VIEW_COUPONS_API : BASE_URL + "/category/view-coupons",
+    DELETE_CAT_API: BASE_URL + "/category/delete",
+    VIEW_COUPONS_API: BASE_URL + "/category/view-coupons",
+    CREATE_COUPONS_API: BASE_URL + "/category/create-coupons",
+    DELETE_COUPONS_API: BASE_URL + "/category/delete-coupons",
 }
 
 

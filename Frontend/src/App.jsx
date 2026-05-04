@@ -35,7 +35,6 @@ import AdminBoard from './components/core/Admin/AdminBoard';
 function App() {
   const location = useLocation();
   const { role } = useSelector(state => state.auth);
-  console.log(role);
 
   useEffect(() => {
     const handleOnline = () => {

@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import fetchData from "../../hooks/fetchData";
 import { category } from "../api";
-const { READ_API, CREATE_CAT_API, VIEW_COUPONS_API } = category;
+const { READ_API, CREATE_CAT_API, VIEW_COUPONS_API, DELETE_CAT_API, CREATE_COUPONS_API, DELETE_COUPONS_API } = category;
 
 export async function viewCategory() {
     try {
@@ -13,22 +13,31 @@ export async function viewCategory() {
     }
 }
 
-export async function createCategory(category) {
+export async function createCategory({ categoryName }) {
     try {
-        const response = await fetchData(CREATE_CAT_API, 'POST', { category });
-        return response;
+        const response = await fetchData(CREATE_CAT_API, 'POST', { categoryName });
+        if (response.success)
+            return response.data;
+    } catch (error) {
+        console.log(error.message);
+        toast.error(`${(error.response?.data?.mes)}`);
+    }
+}
+export async function deleteCategory({ categoryName }) {
+    try {
+        const response = await fetchData(DELETE_CAT_API, 'DELETE', { categoryName });
+        if (response.success)
+            return response.data;
     } catch (error) {
         console.log(error.message);
         toast.error(`${(error.response?.data?.mes)}`);
     }
 }
 
-
-
 export async function viewCoupons() {
     try {
         const response = await fetchData(VIEW_COUPONS_API, 'GET');
-        return response;
+        return response.data;
     } catch (error) {
         console.log(error.message);
         toast.error(`${(error.response?.data?.mes)}`);
@@ -38,17 +47,21 @@ export async function viewCoupons() {
 // Create a new coupon
 export async function createCoupons(couponData) {
     try {
-        const response = await fetchData('POST', couponData);
+        const response = await fetchData(CREATE_COUPONS_API, 'POST', couponData);
 
         console.log('CREATE COUPON API RESPONSE:', response);
 
-        if (!response.data.success) {
-            throw new Error(response.data.message || 'Failed to create coupon');
+        if (!response?.success) {
+            const message = response?.data?.message || 'Failed to create coupon';
+            toast.error(message);
+            throw new Error(message); // stop execution properly
         }
+        toast.success(response.message);
 
-        return response.data.data;
+        return response.data;
     } catch (error) {
         console.error('Create Coupon Error:', error);
+        toast.error(error.message || 'Something went wrong');
         throw error;
     }
 }
@@ -56,12 +69,11 @@ export async function createCoupons(couponData) {
 // Delete a coupon
 export async function deleteCoupon(couponId) {
     try {
-        const response = await fetchData('DELETE', { couponId });
-        if (!response.data.success) {
+        const response = await fetchData(DELETE_COUPONS_API, 'DELETE', { couponId });
+        if (!response.success) {
             throw new Error(response.data.message || 'Failed to delete coupon');
         }
-
-        return response.data.data;
+        toast.success(response.message);
     } catch (error) {
         console.error('Delete Coupon Error:', error);
         throw error;

@@ -13,6 +13,8 @@ function ProductDetail() {
     const location = useLocation();
     const product = location.state?.ele;
     const [review, setReview] = useState([]);
+    console.log(product);
+
 
     useEffect(() => {
         (
@@ -68,7 +70,7 @@ function ProductDetail() {
     const productSizes = useMemo(() => product.sizes, [product.sizes]);
 
     // Memoize computed values
-    const discountedPrice = useMemo(() => product.price + 1200, [product.price]);
+    const discountedPrice = useMemo(() => product.price - product.price * product.discount / 100, [product.price]);
 
 
     const rating = useMemo(() => ({
@@ -250,13 +252,13 @@ const ProductInfo = React.memo(({
         <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
             <div className="flex flex-wrap items-end gap-3">
                 <span className="text-3xl sm:text-4xl font-black text-gray-900">
-                    ₹{product.price.toLocaleString()}
+                    ₹{Math.round(discountedPrice).toLocaleString()}
                 </span>
                 <span className="text-lg text-gray-400 line-through">
-                    ₹{discountedPrice.toLocaleString()}
+                    ₹{product.price.toLocaleString()}
                 </span>
                 <span className="text-green-600 font-bold text-sm">
-                    (45% OFF)
+                    {product.discount} % OFF
                 </span>
             </div>
             <p className="text-green-600 text-sm font-semibold mt-1">
@@ -264,27 +266,32 @@ const ProductInfo = React.memo(({
             </p>
         </div>
 
+
         {/* Size */}
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <span className="font-bold text-gray-900 text-md">
-                    Select Size
-                </span>
-                <button className="text-blue-600 text-sm font-bold hover:underline">
-                    Size Chart
-                </button>
-            </div>
+            {(productSizes.length === 1 && productSizes[0].size === "oneSize") ? "" : (
+                <>
+                    <div className="flex justify-between items-center mb-4">
+                        <span className="font-bold text-gray-900 text-md">
+                            Select Size
+                        </span>
+                        <button className="text-blue-600 text-sm font-bold hover:underline">
+                            Size Chart  {productSizes.length}
+                        </button>
+                    </div>
 
-            <div className="flex flex-wrap gap-3">
-                {productSizes?.map((item) => (
-                    <SizeButton
-                        key={item.size}
-                        size={item.size}
-                        isSelected={selectedSize === item.size}
-                        onSelect={onSizeSelect}
-                    />
-                ))}
-            </div>
+                    <div className="flex flex-wrap gap-3">
+                        {productSizes?.map((item) => (
+                            <SizeButton
+                                key={item.size}
+                                size={item.size}
+                                isSelected={selectedSize === item.size}
+                                onSelect={onSizeSelect}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
         </div>
 
         {/* Buttons */}

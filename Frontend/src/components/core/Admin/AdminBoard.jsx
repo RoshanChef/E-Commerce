@@ -1,419 +1,531 @@
 import React, { useEffect, useState } from 'react';
 import {
-    LayoutDashboard, Users, Ticket, Tag, ShoppingBag, Percent,
-    Settings, LogOut, Menu, X, Search, MoreVertical, Trash2,
-    DollarSign, TrendingUp, UserCheck, UserX, Eye, Clock,
-    Plus, Edit, Activity, BarChart3, ChevronRight, Bell,
-    Package, Star, Filter
+    LayoutDashboard, Users, Tag, ShoppingBag, Percent,
+    Settings, LogOut, Search, Trash2,
+    DollarSign, TrendingUp, UserX, Eye, Plus,
+    Activity, BarChart3, Star, X,
+    CheckCircle
 } from 'lucide-react';
+import { useDispatch } from 'react-redux';
 import { LineChart, PieChart } from '@mui/x-charts';
-import { viewCategory, viewCoupons } from '../../../Services/Operation/categoryApi';
+import { createCategory, createCoupons, deleteCoupon, viewCategory, viewCoupons } from '../../../Services/Operation/categoryApi';
+import { logout } from '../../../Services/Operation/authApi';
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+
+const StatCard = ({ title, value, icon: Icon, trend, colorClass }) => (
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-between">
+            <div>
+                <p className="text-slate-500 text-sm font-medium">{title}</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">{value}</p>
+            </div>
+            <div className={`p-3 rounded-xl ${colorClass}`}>
+                <Icon size={24} />
+            </div>
+        </div>
+        {trend && (
+            <div className={`mt-4 text-xs font-medium flex items-center ${trend.startsWith('↑') ? 'text-emerald-600' : 'text-rose-600'}`}>
+                {trend} <span className="text-slate-400 ml-1 font-normal">vs last month</span>
+            </div>
+        )}
+    </div>
+);
+
+const SectionHeader = ({ title, icon: Icon, children }) => (
+    <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+            {Icon && <Icon className="text-indigo-600" size={22} />}
+            {title}
+        </h2>
+        <div className="flex items-center gap-3">{children}</div>
+    </div>
+);
 
 export default function AdminBoard() {
-    // UI State
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [activeMainTab, setActiveMainTab] = useState('dashboard');
-    const [activeManageTab, setActiveManageTab] = useState('category');
-
-    // Data States
+    const [activeTab, setActiveTab] = useState('dashboard');
     const [categories, setCategories] = useState([]);
-    const [newCategory, setNewCategory] = useState('');
-    const [editingCategory, setEditingCategory] = useState(null);
-
     const [coupons, setCoupons] = useState([]);
-    const [newCoupon, setNewCoupon] = useState({ code: '', discount: '', expiryDate: '', minOrder: '' });
+    const [stats] = useState({ totalRevenue: 189100, totalOrders: 1480, activeSellers: 3, totalCustomers: 28450 });
 
-    const [sellers, setSellers] = useState([]);
-    const [sellerActivity, setSellerActivity] = useState({});
-    const [activityFilter, setActivityFilter] = useState('all');
-    const [searchSeller, setSearchSeller] = useState('');
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    const [stats, setStats] = useState({
-        totalRevenue: 0,
-        totalOrders: 0,
-        activeSellers: 0,
-        pendingSellers: 0,
-        totalProducts: 0,
-        totalCustomers: 0
-    });
-
-    const [revenueData] = useState([12500, 14200, 16800, 18900, 22400, 25800, 29100]);
-    const [xLabels] = useState(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
-    const [recentActivities, setRecentActivities] = useState([]);
-
-    // Sidebar navigation items - Flipkart style
     const sidebarItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'text-indigo-500' },
-        { id: 'sellers', label: 'Sellers', icon: Users, color: 'text-emerald-500' },
-        { id: 'categories', label: 'Categories', icon: Tag, color: 'text-amber-500' },
-        { id: 'coupons', label: 'Coupons', icon: Percent, color: 'text-purple-500' },
-        { id: 'orders', label: 'Orders', icon: ShoppingBag, color: 'text-blue-500' },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'sellers', label: 'Sellers', icon: Users }, // ID is 'sellers'
+        { id: 'categories', label: 'Categories', icon: Tag },
+        { id: 'coupons', label: 'Coupons', icon: Percent },
+        { id: 'orders', label: 'Orders', icon: ShoppingBag },
     ];
 
-
-
-    const fetchAllData = async () => {
-        try {
-            const catData = await viewCategory();
-            setCategories(Array.isArray(catData) ? catData : []);
-
-            const couponData = await viewCoupons();
-            setCoupons(Array.isArray(couponData) ? couponData : []);
-
-
-            const activityMap = {};
-            let totalRev = 0;
-            let activeCount = 0;
-            let pendingCount = 0;
-            const allActivities = [];
-
-
-            setSellerActivity(activityMap);
-            setRecentActivities(allActivities.slice(0, 8));
-
-            setStats({
-                totalRevenue: totalRev,
-                totalOrders: sellersList.reduce((acc, s) => acc + (activityMap[s.id]?.orders || 0), 0) || 0,
-                activeSellers: activeCount,
-                pendingSellers: pendingCount,
-                totalProducts: sellersList.reduce((acc, s) => acc + (s.totalProducts || 0), 0) || 0,
-                totalCustomers: 28450
-            });
-
-        } catch (err) {
-            console.error("Failed to fetch data:", err);
-            // Demo data for Flipkart-like experience
-            setCategories([
-                { _id: '1', categoryName: 'Electronics', image: '📱', count: 1245 },
-                { _id: '2', categoryName: 'Fashion', image: '👕', count: 3421 },
-                { _id: '3', categoryName: 'Home & Furniture', image: '🛋️', count: 1892 },
-                { _id: '4', categoryName: 'Appliances', image: '🔌', count: 876 },
-                { _id: '5', categoryName: 'Books & More', image: '📚', count: 2341 }
-            ]);
-            setCoupons([
-                { _id: 'c1', code: 'FLIP10', discount: '10%', expiryDate: '2025-12-31', minOrder: '999', status: 'Active', usage: 1245 },
-                { _id: 'c2', code: 'SAVE200', discount: '₹200', expiryDate: '2025-11-30', minOrder: '1499', status: 'Active', usage: 892 },
-                { _id: 'c3', code: 'WELCOME50', discount: '50%', expiryDate: '2025-10-15', minOrder: '500', status: 'Expired', usage: 3456 }
-            ]);
-            setSellers([
-                { id: '101', name: 'Astra Electronics', email: 'astra@example.com', status: 'Active', joinDate: '2024-01-15', totalProducts: 245, rating: 4.5, sales: 45200 },
-                { id: '102', name: 'Fashion Hub', email: 'fashion@example.com', status: 'Pending', joinDate: '2024-03-20', totalProducts: 12, rating: 0, sales: 0 },
-                { id: '103', name: 'Zenith Home Decor', email: 'zenith@example.com', status: 'Active', joinDate: '2023-11-05', totalProducts: 890, rating: 4.8, sales: 112000 },
-                { id: '104', name: 'Global Gadgets', email: 'gadgets@example.com', status: 'Blocked', joinDate: '2024-02-10', totalProducts: 56, rating: 2.5, sales: 3200 },
-                { id: '105', name: 'Trendy Wear', email: 'trendy@example.com', status: 'Active', joinDate: '2024-04-01', totalProducts: 178, rating: 4.2, sales: 28700 }
-            ]);
-            setSellerActivity({
-                '101': { sales: 45200, orders: 342, lastActive: '2025-04-29T10:30:00Z', status: 'Active' },
-                '102': { sales: 0, orders: 0, lastActive: '2025-04-28T08:00:00Z', status: 'Pending' },
-                '103': { sales: 112000, orders: 892, lastActive: '2025-04-30T09:15:00Z', status: 'Active' },
-                '104': { sales: 3200, orders: 12, lastActive: '2025-04-25T14:20:00Z', status: 'Blocked' },
-                '105': { sales: 28700, orders: 234, lastActive: '2025-04-29T16:45:00Z', status: 'Active' }
-            });
-            setStats({
-                totalRevenue: 189100,
-                totalOrders: 1480,
-                activeSellers: 3,
-                pendingSellers: 1,
-                totalProducts: 1381,
-                totalCustomers: 28450
-            });
-        }
-    };
-
     useEffect(() => {
-        fetchAllData();
-    }, []); 
+        const fetchCategories = async () => {
+            try {
+                let val = await viewCategory();
+                setCategories(Array.isArray(val) ? val : []);
+                console.log(val);
 
+                val = await viewCoupons();
+                console.log(val);
 
-    // Category Management
-    const handleAddCategory = async () => {
-        if (!newCategory.trim()) return;
-        try {
-            const newCat = await apiAddCategory({ categoryName: newCategory });
-            setCategories([...categories, newCat]);
-            setNewCategory('');
-        } catch (err) {
-            const tempCat = { _id: Date.now().toString(), categoryName: newCategory, count: 0 };
-            setCategories([...categories, tempCat]);
-            setNewCategory('');
-        }
-    };
+                setCoupons(Array.isArray(val) ? val : []);
+            } catch (error) {
+                console.error("Failed to fetch categories", error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
-    const handleDeleteCategory = async (id) => {
-        try {
-            await apiDeleteCategory(id);
-            setCategories(categories.filter(c => c._id !== id));
-        } catch (err) {
-            setCategories(categories.filter(c => c._id !== id));
-        }
-    };
+    const formatCurrency = (val) => `₹${val.toLocaleString('en-IN')}`;
 
-    // Coupon Management
-    const handleAddCoupon = async () => {
-        if (!newCoupon.code || !newCoupon.discount) return;
-        try {
-            const couponPayload = {
-                code: newCoupon.code.toUpperCase(),
-                discount: newCoupon.discount,
-                expiryDate: newCoupon.expiryDate || null,
-                minOrder: newCoupon.minOrder || 0,
-                status: 'Active'
-            };
-            const added = await apiAddCoupon(couponPayload);
-            setCoupons([...coupons, added]);
-            setNewCoupon({ code: '', discount: '', expiryDate: '', minOrder: '' });
-        } catch (err) {
-            const tempCoupon = { _id: Date.now().toString(), ...newCoupon, code: newCoupon.code.toUpperCase(), status: 'Active', usage: 0 };
-            setCoupons([...coupons, tempCoupon]);
-            setNewCoupon({ code: '', discount: '', expiryDate: '', minOrder: '' });
-        }
-    };
-
-    const handleDeleteCoupon = async (id) => {
-        try {
-            await apiDeleteCoupon(id);
-            setCoupons(coupons.filter(c => c._id !== id));
-        } catch (err) {
-            setCoupons(coupons.filter(c => c._id !== id));
-        }
-    };
-
-    const updateSellerStatus = async (sellerId, newStatus) => {
-        setSellers(sellers.map(s => s.id === sellerId ? { ...s, status: newStatus } : s));
-        const activeCount = sellers.filter(s => (s.id === sellerId ? newStatus === 'Active' : s.status === 'Active')).length;
-        const pendingCount = sellers.filter(s => (s.id === sellerId ? newStatus === 'Pending' : s.status === 'Pending')).length;
-        setStats(prev => ({ ...prev, activeSellers: activeCount, pendingSellers: pendingCount }));
-    };
-
-    const filteredSellers = sellers.filter(seller => {
-        const matchesSearch = seller.name.toLowerCase().includes(searchSeller.toLowerCase()) ||
-            seller.email?.toLowerCase().includes(searchSeller.toLowerCase());
-        if (activityFilter === 'all') return matchesSearch;
-        return matchesSearch && seller.status.toLowerCase() === activityFilter.toLowerCase();
-    });
-
-    const formatDate = (dateStr) => {
-        if (!dateStr) return 'N/A';
-        return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-    };
-
-    const formatCurrency = (amount) => {
-        return `₹${amount.toLocaleString('en-IN')}`;
-    };
-
-    // Render different content based on active tab
-    const renderContent = () => {
-        switch (activeMainTab) {
-            case 'dashboard':
-                return renderDashboard();
-            case 'sellers':
-                return renderSellersTable();
-            case 'categories':
-                return renderCategoriesManagement();
-            case 'coupons':
-                return renderCouponsManagement();
-            default:
-                return renderDashboard();
-        }
-    };
+    // --- Render Helpers ---
 
     const renderDashboard = () => (
-        <>
-            {/* Stats Cards Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition">
-                    <div className="flex items-center justify-between">
-                        <div><p className="text-gray-500 text-sm">Total Revenue</p><p className="text-2xl font-bold text-gray-800">{formatCurrency(stats.totalRevenue)}</p></div>
-                        <div className="bg-indigo-100 p-3 rounded-xl"><DollarSign className="text-indigo-600" size={24} /></div>
-                    </div>
-                    <div className="mt-2 text-xs text-green-600 flex items-center">↑ 12.5% from last week</div>
-                </div>
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div><p className="text-gray-500 text-sm">Total Orders</p><p className="text-2xl font-bold text-gray-800">{stats.totalOrders}</p></div>
-                        <div className="bg-emerald-100 p-3 rounded-xl"><ShoppingBag className="text-emerald-600" size={24} /></div>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div><p className="text-gray-500 text-sm">Active Sellers</p><p className="text-2xl font-bold text-gray-800">{stats.activeSellers}</p></div>
-                        <div className="bg-blue-100 p-3 rounded-xl"><Users className="text-blue-600" size={24} /></div>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div><p className="text-gray-500 text-sm">Total Customers</p><p className="text-2xl font-bold text-gray-800">{stats.totalCustomers.toLocaleString()}</p></div>
-                        <div className="bg-purple-100 p-3 rounded-xl"><Star className="text-purple-600" size={24} /></div>
-                    </div>
-                </div>
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard title="Total Revenue" value={formatCurrency(stats.totalRevenue)} icon={DollarSign} trend="↑ 12.5%" colorClass="bg-indigo-50 text-indigo-600" />
+                <StatCard title="Orders" value={stats.totalOrders} icon={ShoppingBag} trend="↑ 8.2%" colorClass="bg-emerald-50 text-emerald-600" />
+                <StatCard title="Active Sellers" value={stats.activeSellers} icon={Users} colorClass="bg-amber-50 text-amber-600" />
+                <StatCard title="Customers" value={stats.totalCustomers.toLocaleString()} icon={Star} colorClass="bg-purple-50 text-purple-600" />
             </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <div className="lg:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <h2 className="font-semibold mb-4 flex items-center gap-2"><TrendingUp size={18} className="text-indigo-500" /> Revenue Overview (Last 7 Days)</h2>
-                    <LineChart xAxis={[{ data: xLabels, scaleType: 'point' }]} series={[{ data: revenueData, area: true, color: '#6366f1' }]} height={280} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <SectionHeader title="Revenue Insights" icon={TrendingUp} />
+                    <LineChart
+                        xAxis={[{ data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], scaleType: 'point' }]}
+                        // FIX: Data must be numbers, not strings like '12k'
+                        series={[{ data: [12000, 15000, 13000, 18000, 22000, 25000, 29000], area: true, color: '#6366f1' }]}
+                        height={300}
+                        // Optional: Format Y axis to show 'k'
+                        yAxis={[{ valueFormatter: (value) => `${value / 1000}k` }]}
+                    />
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <h2 className="font-semibold mb-4 flex items-center gap-2"><BarChart3 size={18} className="text-amber-500" /> Category Distribution</h2>
-                    <PieChart series={[{
-                        data: categories.slice(0, 5).map((cat, idx) => ({ value: 30 - idx * 3, label: cat.categoryName?.slice(0, 12) || 'Category' })),
-                        innerRadius: 40,
-                        outerRadius: 90,
-                    }]} height={240} slotProps={{ legend: { direction: 'column', position: { vertical: 'middle', horizontal: 'right' } } }} />
-                </div>
-            </div>
-
-            {/* Recent Activity & Top Sellers */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2"><Activity size={18} /> Recent Seller Activity</h3>
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                        {recentActivities.map((act, idx) => (
-                            <div key={idx} className="flex items-center gap-3 text-sm border-b pb-3">
-                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center"><Users size={14} className="text-indigo-600" /></div>
-                                <div className="flex-1"><p className="font-medium">{act.sellerName}</p><p className="text-gray-500 text-xs">{act.action}</p></div>
-                                <div className="text-xs text-gray-400">{formatDate(act.time)}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2"><Star size={18} /> Top Performing Sellers</h3>
-                    <div className="space-y-3">
-                        {sellers.filter(s => s.status === 'Active').sort((a, b) => (sellerActivity[b.id]?.sales || 0) - (sellerActivity[a.id]?.sales || 0)).slice(0, 4).map(seller => (
-                            <div key={seller.id} className="flex items-center justify-between">
-                                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">{seller.name.charAt(0)}</div><div><p className="font-medium text-sm">{seller.name}</p><p className="text-xs text-gray-400">{seller.totalProducts} products</p></div></div>
-                                <div className="text-right"><p className="font-semibold text-sm">{formatCurrency(sellerActivity[seller.id]?.sales || 0)}</p><div className="flex items-center text-xs text-yellow-500">★ {seller.rating || 4.5}</div></div>
-                            </div>
-                        ))}
-                    </div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <SectionHeader title="Categories" icon={BarChart3} />
+                    <PieChart
+                        series={[
+                            {
+                                data: categories.map((ele, index) => ({
+                                    id: index,
+                                    value: ele.count || 1,
+                                    label: ele.categoryName,
+                                })),
+                                innerRadius: 60,
+                                paddingAngle: 2,
+                                cornerRadius: 4,
+                            },
+                        ]}
+                        height={300}
+                        slotProps={{ legend: { hidden: true } }}
+                    />
                 </div>
             </div>
-        </>
+        </div>
     );
 
-    const renderSellersTable = () => (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-5 flex flex-wrap justify-between items-center gap-3 border-b">
-                <h3 className="font-bold flex gap-2 text-lg"><Users className="text-indigo-500" /> Seller Management</h3>
-                <div className="flex gap-3">
-                    <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4" /><input value={searchSeller} onChange={(e) => setSearchSeller(e.target.value)} className="pl-9 pr-3 py-2 border rounded-lg text-sm w-48" placeholder="Search seller..." /></div>
-                    <select value={activityFilter} onChange={(e) => setActivityFilter(e.target.value)} className="border rounded-lg px-3 py-2 text-sm bg-white"><option value="all">All Status</option><option value="active">Active</option><option value="pending">Pending</option><option value="blocked">Blocked</option></select>
-                </div>
+    const renderSellers = () => (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="p-6 border-b border-slate-50 bg-slate-50/50">
+                <SectionHeader title="Seller Directory">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input className="pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-64" placeholder="Search sellers..." />
+                    </div>
+                </SectionHeader>
             </div>
             <div className="overflow-x-auto">
-                <table className="w-full">
-                    <thead className="bg-gray-50 text-gray-600 text-sm"><tr><th className="p-4 text-left">Seller</th><th className="p-4 text-left">Status</th><th className="p-4 text-left">Products</th><th className="p-4 text-left">Sales</th><th className="p-4 text-left">Rating</th><th className="p-4 text-left">Last Active</th><th className="p-4 text-left">Actions</th></tr></thead>
-                    <tbody>
-                        {filteredSellers.map((seller) => {
-                            const activity = sellerActivity[seller.id] || { sales: 0, orders: 0, lastActive: seller.joinDate };
-                            return (<tr key={seller.id} className="border-t hover:bg-gray-50 transition"><td className="p-4"><div><p className="font-semibold">{seller.name}</p><p className="text-xs text-gray-400">{seller.email}</p></div></td>
-                                <td className="p-4"><span className={`px-2 py-1 rounded-full text-xs font-medium ${seller.status === 'Active' ? 'bg-green-100 text-green-700' : seller.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{seller.status}</span></td>
-                                <td className="p-4">{seller.totalProducts || 0}</td><td className="p-4 font-mono font-semibold">{formatCurrency(activity.sales || 0)}</td>
-                                <td className="p-4"><div className="flex items-center gap-1 text-yellow-500">★ <span className="text-gray-700">{seller.rating || (activity.sales > 0 ? '4.2' : 'N/A')}</span></div></td>
-                                <td className="p-4 text-sm">{formatDate(activity.lastActive)}</td>
-                                <td className="p-4 flex gap-2">{seller.status === 'Pending' && <button onClick={() => updateSellerStatus(seller.id, 'Active')} className="text-green-600 hover:bg-green-50 p-1 rounded"><CheckCircle size={18} /></button>}{seller.status === 'Active' && <button onClick={() => updateSellerStatus(seller.id, 'Blocked')} className="text-red-500 hover:bg-red-50 p-1 rounded"><UserX size={18} /></button>}<button className="text-gray-400 hover:text-indigo-600"><Eye size={18} /></button></td></tr>);
-                        })}
-                        {filteredSellers.length === 0 && <tr><td colSpan="7" className="p-8 text-center text-gray-400">No sellers found</td></tr>}
+                <table className="w-full text-left">
+                    <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th className="px-6 py-4 font-semibold">Seller Details</th>
+                            <th className="px-6 py-4 font-semibold">Status</th>
+                            <th className="px-6 py-4 font-semibold">Revenue</th>
+                            <th className="px-6 py-4 font-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        <tr className="hover:bg-slate-50/50 transition">
+                            <td className="px-6 py-4">
+                                <div className="font-semibold text-slate-800">Astra Electronics</div>
+                                <div className="text-xs text-slate-500">astra@example.com</div>
+                            </td>
+                            <td className="px-6 py-4">
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Active</span>
+                            </td>
+                            <td className="px-6 py-4 font-medium text-slate-700">₹45,200</td>
+                            <td className="px-6 py-4">
+                                <div className="flex gap-2">
+                                    <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-indigo-600 transition"><Eye size={18} /></button>
+                                    <button className="p-2 hover:bg-rose-50 rounded-lg text-slate-400 hover:text-rose-600 transition"><UserX size={18} /></button>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     );
 
-    const renderCategoriesManagement = () => (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex justify-between items-center mb-6"><h3 className="font-bold text-lg flex gap-2"><Tag className="text-amber-500" /> Categories</h3><button onClick={() => setActiveManageTab('category')} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus size={16} /> Add Category</button></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categories.map((cat) => (<div key={cat._id} className="border rounded-xl p-4 flex justify-between items-center hover:shadow-md transition"><div className="flex items-center gap-3"><div className="text-2xl">{cat.image || '📦'}</div><div><p className="font-semibold">{cat.categoryName}</p><p className="text-xs text-gray-400">{cat.count || 0} products</p></div></div><button onClick={() => handleDeleteCategory(cat._id)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button></div>))}
-            </div>
-            {editingCategory || activeManageTab === 'category' ? <div className="mt-6 p-4 bg-gray-50 rounded-xl"><p className="font-medium mb-3">Add New Category</p><div className="flex gap-2"><input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="border rounded-lg p-2 flex-1" placeholder="Category name" /><button onClick={handleAddCategory} className="bg-indigo-600 text-white px-4 rounded-lg">Add</button><button onClick={() => { setEditingCategory(null); setNewCategory(''); setActiveManageTab(''); }} className="text-gray-500 px-3">Cancel</button></div></div> : null}
-        </div>
-    );
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const handleAddCategory = async (e) => {
+        e.preventDefault();
+        if (!newCategoryName.trim()) return;
 
-    const renderCouponsManagement = () => (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex justify-between items-center mb-6"><h3 className="font-bold text-lg flex gap-2"><Percent className="text-purple-500" /> Coupons</h3><button onClick={() => setActiveManageTab('coupon')} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus size={16} /> Create Coupon</button></div>
-            {activeManageTab === 'coupon' && <div className="mb-6 p-4 bg-gray-50 rounded-xl"><p className="font-medium mb-3">Create New Coupon</p><div className="grid grid-cols-2 md:grid-cols-4 gap-3"><input value={newCoupon.code} onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value })} className="border p-2 rounded-lg text-sm" placeholder="Code" /><input value={newCoupon.discount} onChange={(e) => setNewCoupon({ ...newCoupon, discount: e.target.value })} className="border p-2 rounded-lg text-sm" placeholder="Discount" /><input type="date" value={newCoupon.expiryDate} onChange={(e) => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })} className="border p-2 rounded-lg text-sm" /><input value={newCoupon.minOrder} onChange={(e) => setNewCoupon({ ...newCoupon, minOrder: e.target.value })} className="border p-2 rounded-lg text-sm" placeholder="Min Order" /></div><button onClick={handleAddCoupon} className="mt-3 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm w-full">Generate Coupon</button></div>}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {coupons.map((c) => (<div key={c._id} className="border rounded-xl p-4"><div className="flex justify-between items-start"><div><p className="font-bold text-lg tracking-wider">{c.code}</p><p className="text-sm text-gray-600">Discount: {c.discount}</p><p className="text-xs text-gray-400">Min Order: ₹{c.minOrder || 0} | Used: {c.usage || 0} times</p></div><span className={`text-xs px-2 py-1 rounded-full ${c.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{c.status}</span></div><div className="flex justify-end mt-3 gap-2"><button onClick={() => handleDeleteCoupon(c._id)} className="text-red-400 hover:text-red-600 text-sm flex items-center gap-1"><Trash2 size={14} /> Delete</button></div></div>))}
+        setIsSubmitting(true);
+        try {
+            const response = await createCategory({ categoryName: newCategoryName });
+
+            // Refresh the list with the new category
+            setCategories([...categories, response]);
+
+            // Reset form
+            setNewCategoryName('');
+            setShowAddForm(false);
+        } catch (error) {
+            console.error("Error adding category:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const renderCategory = () => {
+        return (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <SectionHeader title="Category Management" icon={Tag}>
+                    <button
+                        onClick={() => setShowAddForm(!showAddForm)}
+                        className={`${showAddForm ? 'bg-slate-100 text-slate-600' : 'bg-indigo-600 text-white'} px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-md shadow-indigo-100`}
+                    >
+                        {showAddForm ? <X size={18} /> : <Plus size={18} />}
+                        {showAddForm ? 'Cancel' : 'Add New'}
+                    </button>
+                </SectionHeader>
+
+                {/* Inline Add Category Form */}
+                {showAddForm && (
+                    <div className="bg-white p-6 rounded-2xl border-2 border-indigo-50 shadow-sm animate-in zoom-in-95 duration-200">
+                        <form onSubmit={handleAddCategory} className="flex flex-wrap items-end gap-4">
+                            <div className="flex-1 min-w-[240px]">
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
+                                    Category Name
+                                </label>
+                                <input
+                                    autoFocus
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                                    placeholder="e.g. Electronics, Home Decor..."
+                                />
+                            </div>
+                            <button
+                                disabled={isSubmitting || !newCategoryName}
+                                className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                {isSubmitting ? 'Saving...' : 'Save Category'}
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {/* Grid Display */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {categories.length > 0 ? (
+                        categories.map((cat) => (
+                            <div key={cat._id} className="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl">
+                                            {cat.categoryName.charAt(0)}
+                                        </div>
+                                        <h3 className="font-bold text-slate-800">{cat.categoryName}</h3>
+                                    </div>
+                                    <button className="p-2 text-slate-300 hover:text-rose-500 transition-colors">
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-100">
+                            <p className="text-slate-400">No categories found. Click "Add New" to start.</p>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
+
+    const [showCouponForm, setShowCouponForm] = useState(false);
+    const { register, handleSubmit, reset, watch } = useForm({
+        defaultValues: {
+            isActive: true,
+            discountType: 'percentage'
+        }
+    });
+
+    const renderCounpoun = () => {
+        const currentType = watch("discountType");
+
+        const onSubmit = async (data) => {
+            try {
+                const val = await createCoupons(data);
+                setCoupons(Array.isArray(val) ? val : []);
+
+                reset();
+                setShowCouponForm(false);
+            } catch (err) {
+                console.error("Coupon Creation Failed", err);
+            }
+        };
+
+        return (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Header Section */}
+                <SectionHeader title="Coupons & Promotions" icon={Percent}>
+                    <button
+                        onClick={() => setShowCouponForm(!showCouponForm)}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-md shadow-indigo-100"
+                    >
+                        {showCouponForm ? <X size={18} /> : <Plus size={18} />}
+                        {showCouponForm ? 'Close' : 'Create Coupon'}
+                    </button>
+                </SectionHeader>
+
+                {/* Create Coupon Form */}
+                {showCouponForm && (
+                    <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm animate-in slide-in-from-top-2">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                {/* Coupon Code */}
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">Coupon Code</label>
+                                    <input
+                                        {...register("code", { required: "Required" })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        placeholder="PROMO2026"
+                                    />
+                                </div>
+
+                                {/* Discount Type (Select) */}
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">Discount Type</label>
+                                    <select
+                                        {...register("discountType")}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
+                                    >
+                                        <option value="percentage">Percentage (%)</option>
+                                        <option value="fixed">Fixed Amount (₹)</option>
+                                    </select>
+                                </div>
+
+                                {/* Discount Value */}
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">
+                                        {currentType === 'percentage' ? 'Discount Percentage' : 'Discount Amount'}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        {...register("discountValue", { required: true, min: 1 })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        placeholder={currentType === 'percentage' ? "10" : "500"}
+                                    />
+                                </div>
+
+                                {/* Expiry Date */}
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">Expiry Date</label>
+                                    <input
+                                        type="date"
+                                        {...register("expiryDate", { required: true })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    />
+                                </div>
+
+                                {/* Is Active (Checkbox Toggle) */}
+                                <div className="flex items-center gap-3 pt-8 px-2">
+                                    <input
+                                        type="checkbox"
+                                        id="isActive"
+                                        {...register("isActive")}
+                                        className="w-5 h-5 accent-indigo-600 rounded"
+                                    />
+                                    <label htmlFor="isActive" className="text-sm font-semibold text-slate-700 cursor-pointer">
+                                        Enable Coupon Immediately
+                                    </label>
+                                </div>
+
+                                {/* Submit Button */}
+                                <div className="flex items-end">
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <CheckCircle size={18} /> Save Coupon
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                )}
+
+                {/* Coupons List */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {coupons.length > 0 ? (
+
+                        coupons.map((coupon) => (
+                            <div key={coupon._id} className="relative bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 group overflow-hidden">
+
+                                {/* Top/Bottom Ticket Cutouts (Visual Flair) */}
+                                <div className="absolute top-1/2 -translate-y-1/2 -left-3 w-6 h-6 bg-[#F8FAFC] border border-slate-200 rounded-full z-10 shadow-inner"></div>
+                                <div className="absolute top-1/2 -translate-y-1/2 -right-3 w-6 h-6 bg-[#F8FAFC] border border-slate-200 rounded-full z-10 shadow-inner"></div>
+
+                                <div className="p-6">
+                                    {/* Header: Code & Action */}
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-mono font-black text-2xl text-slate-800 tracking-tighter uppercase">
+                                                    {coupon.code}
+                                                </span>
+                                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${coupon.isActive
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : 'bg-slate-100 text-slate-500'
+                                                    }`}>
+                                                    {coupon.isActive ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 mt-1 text-slate-400">
+                                                <Activity size={12} />
+                                                <p className="text-[11px] font-medium uppercase tracking-wide">
+                                                    Valid until {new Date(coupon.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                (async() => {
+                                                    await deleteCoupon(coupon._id)
+                                                    setCoupons(coupons.filter((item) => item._id !== coupon._id))
+                                                })()
+                                            }}
+                                            className="p-2 bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                                            title="Delete Coupon"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+
+                                    {/* Content: Discount Details */}
+                                    <div className="flex items-end justify-between pt-5 border-t border-dashed border-slate-200 relative">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Benefit</p>
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-1.5 bg-indigo-50 rounded-lg">
+                                                    {coupon.discountType === 'percentage' ? (
+                                                        <Percent size={16} className="text-indigo-600" />
+                                                    ) : (
+                                                        <DollarSign size={16} className="text-indigo-600" />
+                                                    )}
+                                                </div>
+                                                <span className="text-sm font-bold text-slate-700 capitalize">
+                                                    {coupon.discountType} Discount
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-right">
+                                            <p className="text-3xl font-black text-indigo-600">
+                                                {coupon.discountType === 'percentage'
+                                                    ? `${coupon.discountValue}%`
+                                                    : `₹${coupon.discountValue}`
+                                                }
+                                                <span className="text-xs text-indigo-400 ml-1 font-bold uppercase tracking-tighter">Off</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Decorative Progress bar indicating "Health/Usage" */}
+                                <div className="h-1 w-full bg-slate-50">
+                                    <div
+                                        className={`h-full transition-all duration-500 ${coupon.isActive ? 'bg-indigo-500' : 'bg-slate-300'}`}
+                                        style={{ width: '100%' }}
+                                    ></div>
+                                </div>
+                            </div>
+                        ))
+
+                    ) : (
+                        <div className="col-span-full py-16 flex flex-col items-center bg-white rounded-3xl border-2 border-dashed border-slate-100">
+                            <Percent className="text-slate-200 mb-4" size={48} />
+                            <p className="text-slate-500 font-medium">No active coupons found</p>
+                            <p className="text-slate-400 text-sm">Create one to boost your sales!</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            {/* FLIPKART STYLE STICKY SIDEBAR */}
-            <aside className="fixed left-0 top-0 h-full w-72 bg-white shadow-xl z-30 flex flex-col overflow-y-auto border-r border-gray-100">
-                {/* Logo Section */}
-                <div className="p-6 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center"><ShoppingBag className="text-white" size={18} /></div>
-                        <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AdminMart</h1>
+        <div className="min-h-screen bg-[#F8FAFC] flex text-slate-900">
+            {/* Sidebar */}
+            <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-slate-100 fixed h-full z-20">
+                <div className="p-8">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-200">
+                            <ShoppingBag className="text-white" size={20} />
+                        </div>
+                        <h1 className="text-xl font-bold tracking-tight text-slate-800">AdminMart</h1>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2">Flipkart Style Dashboard</p>
                 </div>
 
-                {/* Navigation */}
-                <nav className="flex-1 py-6 px-4">
-                    <div className="space-y-1">
-                        {sidebarItems.map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => setActiveMainTab(item.id)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeMainTab === item.id ? 'bg-indigo-50 text-indigo-700 border-r-4 border-indigo-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                            >
-                                <item.icon size={20} className={activeMainTab === item.id ? 'text-indigo-600' : item.color} />
-                                <span className="font-medium">{item.label}</span>
-                                {item.id === 'orders' && <span className="ml-auto bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">12</span>}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-gray-100">
-                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 transition">
-                            <Settings size={20} /> <span className="font-medium">Settings</span>
+                <nav className="flex-1 px-4 space-y-1">
+                    {sidebarItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${activeTab === item.id
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100'
+                                : 'text-slate-500 hover:bg-slate-50'
+                                }`}
+                        >
+                            <item.icon size={20} className={activeTab === item.id ? 'text-white' : 'group-hover:text-indigo-600'} />
+                            <span className="font-semibold text-sm">{item.label}</span>
                         </button>
-                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition">
-                            <LogOut size={20} /> <span className="font-medium">Logout</span>
-                        </button>
-                    </div>
+                    ))}
                 </nav>
 
-                {/* Admin Profile */}
-                <div className="p-4 border-t border-gray-100 mt-auto">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center"><Users size={20} className="text-indigo-600" /></div>
-                        <div><p className="text-sm font-semibold">Admin User</p><p className="text-xs text-gray-400">admin@flipkart.com</p></div>
-                    </div>
+                <div className="p-4 border-t border-slate-50">
+                    <button onClick={() => dispatch(logout(navigate))} className="w-full cursor-pointer flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition font-semibold text-sm">
+                        <LogOut size={20} /> Logout
+                    </button>
                 </div>
             </aside>
 
-            {/* Mobile Header & Toggle */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 bg-white shadow-sm z-20 p-4 flex items-center justify-between">
-                <div className="flex items-center gap-2"><div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center"><ShoppingBag className="text-white" size={18} /></div><h1 className="text-lg font-bold">AdminMart</h1></div>
-                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 rounded-lg bg-gray-100"><Menu size={20} /></button>
-            </div>
-
-            {/* Mobile Sidebar Overlay */}
-            {isMobileMenuOpen && (
-                <>
-                    <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />
-                    <div className="fixed left-0 top-0 h-full w-72 bg-white z-50 lg:hidden shadow-xl overflow-y-auto">
-                        <div className="p-4 border-b flex justify-between items-center"><div className="flex items-center gap-2"><div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center"><ShoppingBag className="text-white" size={18} /></div><h1 className="text-lg font-bold">AdminMart</h1></div><button onClick={() => setIsMobileMenuOpen(false)} className="p-2"><X size={20} /></button></div>
-                        <nav className="py-4 px-3">
-                            {sidebarItems.map((item) => (<button key={item.id} onClick={() => { setActiveMainTab(item.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-1 ${activeMainTab === item.id ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'}`}><item.icon size={20} /><span>{item.label}</span></button>))}
-                        </nav>
+            <main className="flex-1 lg:ml-72 p-6 lg:p-10">
+                <header className="flex justify-between items-center mb-10">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-800 capitalize">{activeTab}</h1>
+                        <p className="text-slate-500 text-sm">Welcome back, here's what's happening today.</p>
                     </div>
-                </>
-            )}
+                    <button className="relative p-2 text-slate-400 hover:bg-white hover:shadow-sm rounded-xl transition">
+                        <div className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></div>
+                        <Settings size={22} />
+                    </button>
+                </header>
 
-            {/* Main Content Area with margin for sidebar */}
-            <main className="flex-1 lg:ml-72 min-h-screen">
-                <div className="p-6 lg:p-8 mt-14 lg:mt-0">
-                    {renderContent()}
-                </div>
+                {/* FIX: Tab ID matching */}
+                {activeTab === 'dashboard' && renderDashboard()}
+                {activeTab === 'sellers' && renderSellers()}
+                {activeTab === 'categories' && renderCategory()}
+                {activeTab === 'coupons' && renderCounpoun()}
             </main>
         </div>
     );

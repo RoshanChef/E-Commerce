@@ -4,21 +4,21 @@ const couponModel = require("../Models/Coupon");
 
 async function createCategory(req, res) {
     try {
-        const { name, parentId } = req.body;
+        const { categoryName, parentId = null } = req.body;
 
         // Basic validation
-        if (!name) {
+        if (!categoryName) {
             return res.status(400).json({ mes: "Category name is required" });
         }
 
         // check duplicate
-        const existing = await categoryModel.findOne({ name });
+        const existing = await categoryModel.findOne({ categoryName });
         if (existing) {
             return res.status(409).json({ mes: "Category already exists" });
         }
 
         const category = await categoryModel.create({
-            name,
+            categoryName,
             parentCategory: parentId || null,
         });
 
@@ -27,9 +27,10 @@ async function createCategory(req, res) {
             data: category,
         });
     } catch (error) {
-        console.error("Create Category Error:", error);
+        console.error("Create Category Error:", error.message);
         res.status(500).json({
             success: false,
+            error: error.message,
             mes: "Internal server error",
         });
     }
@@ -110,6 +111,53 @@ async function createCoupon(req, res) {
 }
 
 
+async function deleteCategory(req, res) {
+    try {
+        const { categoryId } = req.body;
+
+        const category = await categoryModel.findByIdAndDelete(categoryId);
+
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                message: "Category not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Category deleted successfully"
+        });
+
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({
+            error: error.message,
+            success: false,
+            message: "Internal Server Error"
+        })
+    }
+}
+
+async function deleteCoupon(req, res) {
+    try {
+        await couponModel.findByIdAndDelete(req.body.couponId);
+        return res.status(200).json({
+            success: true,
+            message: "Coupon deleted successfully"
+        })
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({
+            error: error.message,
+            success: false,
+            message: "Internal Server Error"
+        })
+    }
+}
+
+
 module.exports = {
-    createCategory, viewCategory, viewCoupon
+    createCategory, viewCategory, viewCoupon,
+    deleteCategory, createCoupon, deleteCoupon
 }

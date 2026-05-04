@@ -115,6 +115,7 @@ export function deleteFromCart(productId, size, stock) {
 
 const loadScript = (src) => {
     return new Promise((resolve) => {
+        // Prevent duplicate scripts
         if (document.querySelector(`script[src="${src}"]`)) {
             resolve(true);
             return;
@@ -127,44 +128,41 @@ const loadScript = (src) => {
     });
 };
 
-// 2. Export a direct async function
-export function createOrder(total) {
-    return async function () {
-        try {
-            const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+// Removed the extra inner return function
+export async function createOrder(total) {
+    try {
+        const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
 
-            if (!res) {
-                toast.error("Razorpay SDK failed to load. Check your connection.");
-                return null;
-            }
-            const response = await fetchData(CREATE_ORDER_API, 'POST', { total });
-
-            // Basic validation of backend response
-            if (!response) {
-                toast.error("Failed to create Order ID from server.");
-                return null;
-            }
-
-            console.log(response);
-            return response;
-
-        } catch (error) {
-            console.error("Payment Error:", error.message);
-            toast.error("An unexpected error occurred");
+        if (!res) {
+            toast.error("Razorpay SDK failed to load. Check your connection.");
             return null;
         }
+
+        // Make sure total is converted to paise if your backend expects it
+        const response = await fetchData(CREATE_ORDER_API, 'POST', { total });
+        console.log(response);
+
+        if (!response || !response.success) {
+            toast.error(response?.message || "Failed to create Order ID from server.");
+            return null;
+        }
+
+        return response; // This now returns the actual data to the caller
+
+    } catch (error) {
+        console.error("Payment Error:", error.message);
+        toast.error("An unexpected error occurred during order creation.");
+        return null;
     }
 }
 
-export function verify_payment(result) {
-    return async function () {
-        try {
-            const response = await fetchData(VERIFY_PAYMENT, 'POST', result);
-            return response;
-        } catch (error) {
-            console.log(error.message);
-            toast.error(error.message);
-        }
+export async function verify_payment(result) {
+    try {
+        const response = await fetchData(VERIFY_PAYMENT, 'POST', result);
+        return response;
+    } catch (error) {
+        console.log(error.message);
+        toast.error(error.message);
     }
 }
 
@@ -172,6 +170,7 @@ export function placeOrder(orderData) {
     return async function (dispatch) {
         try {
             const response = await fetchData(PLACE_ORDER, 'POST', orderData);
+            console.log('user', response.user);
             dispatch(setSignupData(response.user));
         } catch (error) {
             console.log(error.message);
@@ -192,15 +191,15 @@ export async function viewOrders() {
 }
 
 export async function getAllProducts() {
-        try {
-            const response = await fetchData(GET_ALLPRODUCT_API, 'GET');
-            if (response.success)
-                return response.products;
-        }
-        catch (error) {
-            console.log(error.message);
-            toast.error(error.message);
-        }
+    try {
+        const response = await fetchData(GET_ALLPRODUCT_API, 'GET');
+        if (response.success)
+            return response.products;
+    }
+    catch (error) {
+        console.log(error.message);
+        toast.error(error.message);
+    }
 }
 
 export async function createReviews(formdata) {

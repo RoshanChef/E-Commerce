@@ -1,4 +1,8 @@
 const orderModel = require("../Models/Order");
+const razorpay = require("../Config/razorpay");
+const crypto = require("crypto");
+const { success } = require("zod");
+const userModel = require("../Models/User");
 
 async function createOrder(req, res) {
     try {
@@ -11,7 +15,7 @@ async function createOrder(req, res) {
         };
 
         const order = await razorpay.orders.create(options);
-        res.status(200).send({ order });
+        res.status(200).send({ success: true, order });
     } catch (err) {
         res.status(500).send(err);
     }
@@ -60,7 +64,6 @@ async function placeOrder(req, res) {
             paymentStatus = "Completed"
         }
 
-
         const order = await orderModel.create({
             user,
             products,
@@ -98,7 +101,7 @@ async function viewOrders(req, res) {
             });
         }
 
-        res.status(200).send({
+        return res.status(200).send({
             success: true,
             count: orders.length,
             orders
@@ -118,7 +121,6 @@ async function updateStatus(req, res) {
         const { orderId, status } = req.body;
 
         const order = await orderModel.findByIdAndUpdate(orderId, { status }, { new: true });
-        console.log(order);
         if (!order) {
             return res.status(404).send({
                 success: false,
@@ -126,13 +128,13 @@ async function updateStatus(req, res) {
             });
         }
 
-        res.status(200).send({
+        return res.status(200).send({
             success: true,
             message: 'Order status updated successfully',
         })
     } catch (error) {
         console.log(error.message);
-        res.status(500).send({
+        return res.status(500).send({
             success: false,
             message: "Internal server error"
         })

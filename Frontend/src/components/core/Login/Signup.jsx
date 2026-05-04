@@ -1,4 +1,5 @@
-import { Eye, EyeOff, Mail, Check, User } from "lucide-react";
+/* eslint-disable no-unused-vars */
+import { Eye, EyeOff, Mail, Check, User, Lock } from "lucide-react"; // Added Lock
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,20 +26,39 @@ function Signup() {
 
     const password = watch("password", "");
     const confirmPassword = watch("confirmPassword", "");
-    const isMatch = password && confirmPassword && password === confirmPassword;
+
+    // Only show match icon if both fields are filled and matching
+    const isMatch = password.length > 0 && confirmPassword.length > 0 && password === confirmPassword;
 
     function onSubmit(data) {
         const { email, password, firstName, lastName } = data;
         dispatch(signUp(navigate, email, password, firstName, lastName, undefined));
     }
 
-    // Shared input style for consistency
-    const inputBaseStyle = "w-full pl-10 pr-4 py-2.5 border rounded-xl outline-none transition-all duration-200";
+    // Styles
+    const inputBaseStyle = "w-full pl-10 pr-4 py-2.5 border rounded-xl outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm";
     const inputFocusStyle = "focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 border-gray-200";
+    const errorBorderStyle = "border-red-400 focus:ring-red-100 focus:border-red-400";
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-10">
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-indigo-100/50 p-8 border border-gray-100">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-16 relative overflow-hidden">
+
+            {/* Background Grid */}
+            <div className="absolute inset-0 z-0"
+                style={{
+                    backgroundImage: `
+                        linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+                        linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)
+                    `,
+                    backgroundSize: '40px 40px',
+                }}
+            >
+                <div className="absolute inset-0 bg-slate-50 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+            </div>
+
+            {/* Form Container */}
+            <div className="relative z-10 w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl shadow-indigo-100/50 p-8 border border-white">
+
                 {/* Title */}
                 <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
@@ -57,7 +77,7 @@ function Signup() {
                                     {...register("firstName", { required: "Required" })}
                                     type="text"
                                     placeholder="First Name"
-                                    className={`${inputBaseStyle} ${inputFocusStyle} ${errors.firstName ? 'border-red-400' : ''}`}
+                                    className={`${inputBaseStyle} ${errors.firstName ? errorBorderStyle : inputFocusStyle}`}
                                 />
                             </label>
                         </div>
@@ -66,7 +86,7 @@ function Signup() {
                                 {...register("lastName", { required: "Required" })}
                                 type="text"
                                 placeholder="Last Name"
-                                className={`w-full px-4 py-2.5 border rounded-xl outline-none transition-all ${inputFocusStyle} ${errors.lastName ? 'border-red-400' : ''}`}
+                                className={`w-full px-4 py-2.5 border rounded-xl outline-none transition-all ${errors.lastName ? errorBorderStyle : inputFocusStyle}`}
                             />
                         </div>
                     </div>
@@ -76,10 +96,13 @@ function Signup() {
                         <label className="relative block">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
-                                {...register("email", { required: "Email is required" })}
+                                {...register("email", {
+                                    required: "Email is required",
+                                    pattern: { value: /^\S+@\S+$/i, message: "Invalid email" }
+                                })}
                                 type="email"
                                 placeholder="Enter your email"
-                                className={`${inputBaseStyle} ${inputFocusStyle} ${errors.email ? 'border-red-400' : ''}`}
+                                className={`${inputBaseStyle} ${errors.email ? errorBorderStyle : inputFocusStyle}`}
                             />
                         </label>
                         {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email.message}</p>}
@@ -89,11 +112,7 @@ function Signup() {
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1 ml-1">New Password</label>
                         <div className="relative">
-                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                <svg size={18} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-[18px] h-[18px]">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
                                 type={showPass.n_pass ? "text" : "password"}
                                 {...register("password", {
@@ -104,11 +123,12 @@ function Signup() {
                                         message: "Must contain letter & number",
                                     },
                                 })}
-                                className={`${inputBaseStyle} ${inputFocusStyle}`}
+                                placeholder="••••••••"
+                                className={`${inputBaseStyle} ${errors.password ? errorBorderStyle : inputFocusStyle}`}
                             />
                             <button
                                 type="button"
-                                className="absolute right-3 cursor-pointer top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-500"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-500 transition-colors"
                                 onClick={() => setShowPass((p) => ({ ...p, n_pass: !p.n_pass }))}
                             >
                                 {showPass.n_pass ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -127,16 +147,19 @@ function Signup() {
                                     required: "Confirm Password is required",
                                     validate: (val) => val === password || "Passwords do not match",
                                 })}
+                                placeholder="••••••••"
                                 className={`w-full px-4 py-2.5 border rounded-xl outline-none transition-all ${isMatch
-                                    ? "border-green-500 ring-2 ring-green-500/10"
-                                    : inputFocusStyle
+                                        ? "border-green-500 ring-2 ring-green-500/10 focus:border-green-500"
+                                        : errors.confirmPassword ? errorBorderStyle : inputFocusStyle
                                     }`}
                             />
                             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                 <AnimatePresence>
                                     {isMatch && (
                                         <motion.div
-                                            initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                                            initial={{ scale: 0, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            exit={{ scale: 0, opacity: 0 }}
                                             className="text-green-500"
                                         >
                                             <Check size={18} strokeWidth={3} />
@@ -145,7 +168,7 @@ function Signup() {
                                 </AnimatePresence>
                                 <button
                                     type="button"
-                                    className="text-gray-400 hover:text-indigo-500 cursor-pointer"
+                                    className="text-gray-400 hover:text-indigo-500 transition-colors"
                                     onClick={() => setShowPass((p) => ({ ...p, c_pass: !p.c_pass }))}
                                 >
                                     {showPass.c_pass ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -159,13 +182,15 @@ function Signup() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className={`w-full py-3 cursor-pointer mt-4 rounded-xl font-bold text-white shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] ${loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+                        className={`w-full py-3 mt-4 cursor-pointer rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] ${loading
+                                ? "bg-indigo-400 cursor-not-allowed"
+                                : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200"
                             }`}
                     >
                         {loading ? (
-                            <div className="flex  items-center justify-center gap-2">
+                            <div className="flex items-center justify-center gap-2">
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                <span>Processing...</span>
+                                <span>Creating Account...</span>
                             </div>
                         ) : (
                             "Create Account"

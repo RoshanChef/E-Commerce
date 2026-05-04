@@ -36,6 +36,13 @@ function AddProduct() {
         control,
         name: "sizes",
     });
+    const category = watch("category");
+
+    let Checks = {
+        '69c5136f561119d21c2c6220': 'Men',
+        '69c513db9fe5ef31774ac905': 'Woman'
+    }
+
 
     const images = watch("images");
     const [categories, setCategory] = useState([]);
@@ -45,7 +52,6 @@ function AddProduct() {
         async function fetchCats() {
             const val = await viewCategory();
             if (val) setCategory(val);
-            console.log(val);
         }
         fetchCats();
     }, []);
@@ -81,11 +87,16 @@ function AddProduct() {
             formData.append("discount", Number(data.discount));
             formData.append("category", data.category);
 
-            const formattedSizes = data.sizes.map((s) => ({
-                size: s.size,
-                stock: Number(s.stock),
-            }));
-            formData.append("sizes", JSON.stringify(formattedSizes));
+            if (data.category in Checks) {
+                const formattedSizes = data.sizes.map((s) => ({
+                    size: s.size,
+                    stock: Number(s.stock),
+                }));
+                formData.append("sizes", JSON.stringify(formattedSizes));
+            }
+            else {
+                formData.append("sizes", JSON.stringify([{ size: "oneSize", stock: Number(data.stock) }]));
+            }
 
             data.images.forEach((file) => {
                 formData.append("images", file);
@@ -245,21 +256,24 @@ function AddProduct() {
                             )}
                         </div>
 
-                        <div>
+
+
+                        < div >
                             <div className="flex justify-between items-center mb-3">
                                 <label className="text-sm font-semibold text-slate-700">Sizes & Stock</label>
-                                <button type="button" onClick={() => append({ size: "", stock: "" })} className="text-xs font-bold text-indigo-600 flex items-center gap-1">
+                                {(category in Checks) && <button type="button" onClick={() => append({ size: "", stock: "" })} className="text-xs font-bold text-indigo-600 flex items-center gap-1">
                                     <Plus className="w-3 h-3" /> Add Size
-                                </button>
+                                </button>}
                             </div>
                             <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                 {fields.map((field, index) => (
                                     <div key={field.id} className="flex gap-3 items-center">
-                                        <input
-                                            {...register(`sizes.${index}.size`, { required: true })}
-                                            placeholder="Size"
-                                            className="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-indigo-400"
-                                        />
+                                        {(category in Checks) &&
+                                            <input
+                                                {...register(`sizes.${index}.size`, { required: true })}
+                                                placeholder="Size"
+                                                className="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-indigo-400"
+                                            />}
                                         <input
                                             type="number"
                                             {...register(`sizes.${index}.stock`, { required: true })}
@@ -273,6 +287,7 @@ function AddProduct() {
                                 ))}
                             </div>
                         </div>
+
                     </div>
 
                     <div className="md:col-span-2 border-t border-slate-100 pt-6 flex justify-end gap-4">
@@ -288,8 +303,8 @@ function AddProduct() {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 

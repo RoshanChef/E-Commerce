@@ -1,10 +1,11 @@
 const express = require("express");
 const userRouter = express.Router();
-const { signUp, verify_otp, login, sendOtp, changePassword } = require('../Controllers/Authenction');
 const passport = require("passport");
 const { Auth } = require("../Middlewares/Auth");
-const { addToCart, removeFromCart, updateCart, viewCart, viewCoupon, decreaseCartQuantity,  editProfile } = require("../Controllers/User");
+const { signUp, verify_otp, login, sendOtp, changePassword } = require('../Controllers/Authenction');
+const { addToCart, removeFromCart, updateCart, viewCart, decreaseCartQuantity, editProfile } = require("../Controllers/User");
 const { viewOrders, placeOrder, verify_payment, createOrder, updateStatus } = require('../Controllers/Order');
+const { viewCoupon } = require("../Controllers/Category");
 
 /* ================= AUTH ROUTES ================= */
 userRouter.post('/signUp', signUp);

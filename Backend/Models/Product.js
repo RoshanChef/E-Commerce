@@ -25,12 +25,15 @@ const productSchema = new mongoose.Schema({
         ref: "Category"
     },
 
-    sizes: [
-        {
-            size: String,
-            stock: Number
-        }
-    ],
+    sizes: {
+        type: [
+            {
+                size: String,
+                stock: Number
+            },
+        ],
+        default: []
+    },
 
     images: {
         type: [String],

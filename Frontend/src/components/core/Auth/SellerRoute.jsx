@@ -3,7 +3,6 @@ import { Navigate, Outlet } from "react-router-dom";
 
 const SellerRoute = () => {
     const { token, role } = useSelector(state => state.auth);
-    console.log('coming');
     
     if (!token) {
         return <Navigate to="/seller-login" />;
