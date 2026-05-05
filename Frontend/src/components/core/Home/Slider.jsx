@@ -1,9 +1,8 @@
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination, EffectCreative } from "swiper/modules";
+import { Autoplay, Pagination } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/pagination";
-import "swiper/css/effect-creative";
 
 const banners = [
   { id: 1, image: "https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/22793132f4f08be0.png?q=80" },
@@ -12,96 +11,70 @@ const banners = [
   { id: 4, image: "https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/35abbb9b568149d3.png?q=80" },
 ];
 
+
+
 export default function Slider() {
+
   return (
-    <div className="w-full pt-20 max-w-[1600px] mx-auto py-10 md:py-20 px-0 md:px-4 select-none">
-      <Swiper
-        modules={[Autoplay, Pagination, EffectCreative]}
-        loop={true}
-        grabCursor={true}
-        centeredSlides={true}
-        // Base mobile settings
-        slidesPerView={1}
-        spaceBetween={10}
-        autoplay={{
-          delay: 3500,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
-        speed={1000}
-        breakpoints={{
-          // Small tablets
-          640: { 
-            slidesPerView: 1.5, 
-            spaceBetween: 20 
-          },
-          // Laptops
-          1024: { 
-            slidesPerView: 1.4, 
-            spaceBetween: 30 
-          },
-          // Large Desktops
-          1280: {
-            slidesPerView: 1.6,
-            spaceBetween: 40
-          }
-        }}
-        pagination={{
-          clickable: true,
-          dynamicBullets: true,
-        }}
-        className="pb-12 md:pb-16"
-      >
-        {banners.map((banner) => (
-          <SwiperSlide key={banner.id} className="flex items-center rounded-2xl justify-center">
-            {({ isActive }) => (
-              <div
-                className={`
-                  relative w-full overflow-hidden transition-all duration-1000 ease-in-out
-                  ${isActive 
-                    ? "scale-100 shadow-xl opacity-100 rounded-none md:rounded-2xl" 
-                    : "scale-95 opacity-50 blur-[0.5px] md:scale-90 md:opacity-40 rounded-none md:rounded-2xl"}
-                `}
-              >
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10" />
-                
+    <div className="w-full max-w-[1600px] mx-auto pt-16 px-6">
+
+      <div className="overflow-hidden">
+        <Swiper
+          modules={[Autoplay, Pagination]}
+          loop={true}
+          initialSlide={1}
+          slidesPerView={2.2}
+          spaceBetween={3}
+          autoplay={{
+            delay: 2000,
+            disableOnInteraction: false,
+          }}
+          speed={800}
+          pagination={{
+            clickable: true,
+          }}
+          breakpoints={{
+            0: {
+              slidesPerView: 1.1,
+              spaceBetween: 10,
+            },
+            480: {
+              slidesPerView: 1.3,
+              spaceBetween: 12,
+            },
+            640: {
+              slidesPerView: 1.6,
+              spaceBetween: 14,
+            },
+            760: {
+              slidesPerView: 2,
+              spaceBetween: 16,
+            },
+            1024: {
+              slidesPerView: 2.5,
+              spaceBetween: 20,
+            },
+            1280: {
+              slidesPerView: 2.5,
+              spaceBetween: 24,
+            },
+
+          }}
+        >
+          {banners.map((banner) => (
+            <SwiperSlide key={banner.id}>
+              <div className="overflow-hidden shadow-sm p-2">
                 <img
                   src={banner.image}
                   alt="banner"
-                  // Responsive height: mobile uses aspect ratio, desktop uses vh
-                  className="w-full h-auto aspect-[16/9] md:h-[60vh] lg:h-[70vh] min-h-[220px] max-h-[800px] object-cover"
+                  className="md:w-[550px] rounded-2xl h-[180px] sm:h-[250px] md:h-[220px]  lg:h-[320px] object-cover"
                 />
               </div>
-            )}
-          </SwiperSlide>
-        ))}
-      </Swiper>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
 
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        .swiper-pagination-bullet-active {
-          background: #4f46e5 !important;
-          width: 24px !important;
-          border-radius: 8px !important;
-          transition: width 0.3s ease !important;
-        }
-        @media (min-width: 768px) {
-          .swiper-pagination-bullet-active {
-            width: 32px !important;
-          }
-        }
-        .swiper-wrapper {
-          display: flex;
-          align-items: center;
-        }
-        .swiper-pagination-bullet {
-          background: #6366f1;
-        }
-        .swiper-pagination {
-            bottom: 0px !important;
-        }
-      `}} />
     </div>
   );
 }

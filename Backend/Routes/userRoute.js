@@ -32,6 +32,7 @@ userRouter.post('/update-status', Auth, updateStatus);
 /* ================= USER ROUTES ================= */
 userRouter.patch('/edit-profile', Auth, editProfile);
 userRouter.get('/coupon', Auth, viewCoupon);
+userRouter.put('/edit-address', Auth, editProfile);
 
 /* ================= GOOGLE AUTH ================= */
 userRouter.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

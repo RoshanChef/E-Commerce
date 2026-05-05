@@ -5,6 +5,8 @@ import { useReactToPrint } from "react-to-print";
 
 export default function Invoice({ setInvoice, order }) {
     const { signupData: user } = useSelector((state) => state.auth) || {};
+    
+    
     const invoiceRef = useRef(null);
     const handlePrint = useReactToPrint({
         contentRef: invoiceRef,
@@ -33,8 +35,7 @@ export default function Invoice({ setInvoice, order }) {
     function formatAddress(address) {
         if (!address) return "Shipping address not provided";
         if (typeof address === "string") return address;
-
-        return `${address.address || ""}, ${address.city || ""}, ${address.state || ""} ${address.pincode || ""}`;
+        return `${address.street || ""}, ${address.city || ""}, ${address.state || ""} ${address.pincode || ""}`;
     }
 
     return (
@@ -104,7 +105,7 @@ export default function Invoice({ setInvoice, order }) {
                                 ? `${user.firstName} ${user.lastName || ""}`
                                 : "Valued Customer"}
                         </p>
-                        <p>{formatAddress(order.shippingAddress)}</p>
+                        <p>{formatAddress(user.addresses[0])}</p>
                         <p>{user?.email || "customer@email.com"}</p>
                     </div>
                 </div>

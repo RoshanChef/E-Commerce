@@ -21,6 +21,4 @@ productRouter.post('/create/', isSeller, createProduct);
 productRouter.patch('/update/:productId', isSeller, updateProduct);
 productRouter.delete('/delete/:productId', isSeller, deleteProduct);
 
-
-
 module.exports = productRouter;

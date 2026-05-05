@@ -36,21 +36,17 @@ export function deleteProduct(productId) {
     }
 }
 
-export function add_To_Cart(navigate, product_id, selectedSize) {
-    return async function (dispatch) {
-        try {
-            const response = await fetchData(ADD_API, 'POST', { id: product_id, size: selectedSize });
+export async function add_To_Cart(navigate, product_id, selectedSize) {
+    try {
+        const response = await fetchData(ADD_API, 'POST', { id: product_id, size: selectedSize });
 
-            if (navigate && response) {
-                localStorage.setItem('user', JSON.stringify(response.user));
-                dispatch(setSignupData(response.user));
-                navigate('/addToCart', {
-                    state: { product }
-                })
-            }
-        } catch (error) {
-            console.log(error);
+        if (navigate && response) {
+            navigate('/addToCart', {
+                state: { product }
+            })
         }
+    } catch (error) {
+        console.log(error);
     }
 }
 
@@ -79,23 +75,20 @@ export function viewCart() {
     }
 }
 
-export function decreaseCartQuantity(productId, size) {
-    return async function (dispatch) {
-        try {
-            const response = await fetchData(DESCREASE_API, "PUT", {
-                productId,
-                size,
-            });
+export async function decreaseCartQuantity(productId, size) {
+    try {
+        const response = await fetchData(DESCREASE_API, "PUT", {
+            productId,
+            size,
+        });
 
-            if (response) {
-                dispatch(setSignupData(response.user));
-                return response;
-            }
-        } catch (error) {
-            console.log(error);
-            toast.error("Something went wrong");
+        if (response) {
+            return response;
         }
-    };
+    } catch (error) {
+        console.log(error);
+        toast.error("Something went wrong");
+    }
 }
 
 export function deleteFromCart(productId, size, stock) {
@@ -170,8 +163,9 @@ export function placeOrder(orderData) {
     return async function (dispatch) {
         try {
             const response = await fetchData(PLACE_ORDER, 'POST', orderData);
-            console.log('user', response.user);
+            localStorage.setItem('user', JSON.stringify(response.user));
             dispatch(setSignupData(response.user));
+            console.log('user', response.user);
         } catch (error) {
             console.log(error.message);
         }

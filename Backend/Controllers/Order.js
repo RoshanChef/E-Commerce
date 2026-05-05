@@ -46,7 +46,7 @@ async function placeOrder(req, res) {
     try {
         const user = req.userId;
         const orderData = req.body;
-
+ 
         let products = orderData.items.map((item) => {
             return {
                 product: item.product._id,

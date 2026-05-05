@@ -34,7 +34,7 @@ async function verify_otp(req, res) {
     // Generate JWT token
     const token = jwt.sign({ id: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: "3d" } 
+        { expiresIn: "3d" }
     );
 
     // Set cookie
@@ -120,7 +120,7 @@ async function login(req, res) {
 
         // send otp to email
         await otpModel.create({ email, otp });
-        console.log(otp);
+        console.log("OTP : ", otp);
 
         // Send response
         return res.status(200).json({

@@ -26,15 +26,14 @@ import Checkout from './components/feature/Checkout';
 import Orders from './components/core/User/Orders';
 import SellerRoute from './components/core/Auth/SellerRoute';
 import AdminRoute from './components/core/Auth/AdminRoute';
-import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import MenuProduct from './components/core/Menu/MenuProduct';
 import AdminBoard from './components/core/Admin/AdminBoard';
+import AboutUs from './pages/AboutUs';
 
 
 function App() {
   const location = useLocation();
-  const { role } = useSelector(state => state.auth);
 
   useEffect(() => {
     const handleOnline = () => {
@@ -103,6 +102,11 @@ function App() {
             <Route path='/admin' element={<AdminBoard />} />
 
           </Route>
+
+
+
+          
+          <Route path="/about-us" element={<AboutUs />} />
 
           {/* 404 Catch-all (Optional but recommended) */}
           <Route path="*" element={<NotFound />} />

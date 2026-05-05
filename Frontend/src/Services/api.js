@@ -20,6 +20,7 @@ export const auth = {
     PLACE_ORDER: BASE_URL + '/auth/place-order',
     VIEW_ORDER: BASE_URL + '/auth/view-order',
     UPDATE_STATUS_API: BASE_URL + '/auth/update-status',
+    EDIT_ADDRESS_API:BASE_URL + '/auth/edit-address',
 }
 
 export const product = {

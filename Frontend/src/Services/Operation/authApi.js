@@ -2,7 +2,7 @@ import fetchData from "../../hooks/fetchData";
 import { toast } from "sonner";
 import { setLoading, setSignupData, setToken, setRole } from "../../Redux/slices/authSlice";
 import { auth } from '../api';
-const { LOGIN_API, VERIFY_API, SENDOTP_API, SIGNUP_API, CHANGE_PASSWORD_API } = auth;
+const { LOGIN_API, VERIFY_API, SENDOTP_API, SIGNUP_API, CHANGE_PASSWORD_API, EDIT_ADDRESS_API } = auth;
 
 export function login(email, password, navigate) {
     return async function (dispatch) {
@@ -155,6 +155,22 @@ export function signUp(navigate, email, password, firstName, lastName, accountTy
                 console.log(error.message);
         } finally {
             dispatch(setLoading(false));
+        }
+    }
+}
+
+export function editAddress(payload) {
+    return async function (dispatch) {
+        try {
+            console.log("called");
+            const res = await fetchData(EDIT_ADDRESS_API, 'PUT', payload);
+
+            localStorage.setItem('user', JSON.stringify(res.user));
+            dispatch(setSignupData(res.user));
+            toast.success('Address Updated Successfully');
+        } catch (error) {
+            console.log(error.message);
+            toast.error(error.message);
         }
     }
 }

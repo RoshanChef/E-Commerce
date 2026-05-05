@@ -127,7 +127,7 @@ async function decreaseCartQuantity(req, res) {
         return res.status(200).json({
             mes: "Product added to cart",
             cart: user.cart,
-            user: user.populate('cart.product')
+            user: user
         });
 
     } catch (error) {
@@ -260,7 +260,7 @@ async function editProfile(req, res) {
 
         return res.status(200).send({
             success: true,
-            user,
+            user
         });
     } catch (error) {
         console.log(error.message);
